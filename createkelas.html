@@ -2103,26 +2103,56 @@
             if (!canvas || typeof Chart === "undefined") return;
             if (chartInstances[cfg.id]) { chartInstances[cfg.id].destroy(); delete chartInstances[cfg.id]; }
 
+            const t = cfg.type;
             let source = filteredData.slice();
             if (cfg.labelValues && cfg.labelValues.length) {
                 const allowed = new Set(cfg.labelValues.map(String));
                 source = source.filter(r => allowed.has(String(r[cfg.labelField] ?? "")));
             }
-            const primaryField = (cfg.valueFields || [])[0];
-            if (cfg.sortDesc && primaryField) source.sort((a, b) => (Number(b[primaryField]) || 0) - (Number(a[primaryField]) || 0));
-            if (cfg.topN && cfg.topN > 0) source = source.slice(0, cfg.topN);
 
-            const labels = source.map(r => String(r[cfg.labelField] ?? ""));
             const fields = cfg.valueFields || [];
+            const primaryField = fields[0];
+
+            let displaySource = source;
+            const isAggregatedType = !["scatter", "bubble", "histogram", "boxplot"].includes(t);
+            if (isAggregatedType) {
+                // Group & Sum by labelField
+                const groupedMap = new Map();
+                source.forEach(r => {
+                    const key = String(r[cfg.labelField] ?? "").trim() || "-";
+                    if (!groupedMap.has(key)) {
+                        const entry = { _label: key };
+                        fields.forEach(f => entry[f] = 0);
+                        groupedMap.set(key, entry);
+                    }
+                    const entry = groupedMap.get(key);
+                    fields.forEach(f => {
+                        entry[f] += Number(r[f]) || 0;
+                    });
+                });
+                displaySource = Array.from(groupedMap.values());
+            }
+
+            if (cfg.sortDesc && primaryField) {
+                displaySource.sort((a, b) => {
+                    const valA = Number(a[primaryField]) || 0;
+                    const valB = Number(b[primaryField]) || 0;
+                    return valB - valA;
+                });
+            }
+            if (cfg.topN && cfg.topN > 0) {
+                displaySource = displaySource.slice(0, cfg.topN);
+            }
+
+            const labels = isAggregatedType ? displaySource.map(r => r._label) : displaySource.map(r => String(r[cfg.labelField] ?? ""));
             const colors = CHART_PALETTE;
-            const vals = f => source.map(r => Number(r[f]) || 0);
+            const vals = f => displaySource.map(r => Number(r[f]) || 0);
             const datasets = fields.map((vf, i) => ({
                 label: vf, data: vals(vf), backgroundColor: colors[i % colors.length] + "CC",
                 borderColor: colors[i % colors.length], borderWidth: 1, fill: false, tension: .25
             }));
 
             let type = "bar", data = { labels, datasets }, options = chartBaseOptions();
-            const t = cfg.type;
 
             if (t === "barh") { type = "bar"; options.indexAxis = "y"; }
             else if (t === "clusteredColumn") { type = "bar"; options.scales.x.stacked = false; options.scales.y.stacked = false; }
@@ -2130,7 +2160,7 @@
             else if (t === "stacked100Column") {
                 type = "bar"; options.scales.x.stacked = true; options.scales.y.stacked = true;
                 options.scales.y.max = 100; options.scales.y.ticks = { font: { size: 9 }, callback: v => v + "%" };
-                datasets.forEach(ds => { ds.data = source.map(r => { const total = fields.reduce((a, f) => a + (Number(r[f]) || 0), 0); return total ? ((Number(r[ds.label]) || 0) / total * 100) : 0; }); });
+                datasets.forEach(ds => { ds.data = displaySource.map(r => { const total = fields.reduce((a, f) => a + (Number(r[f]) || 0), 0); return total ? ((Number(r[ds.label]) || 0) / total * 100) : 0; }); });
             }
             else if (t === "clusteredBar") { type = "bar"; options.indexAxis = "y"; options.scales.x.stacked = false; options.scales.y.stacked = false; }
             else if (t === "stackedBar") { type = "bar"; options.indexAxis = "y"; options.scales.x.stacked = true; options.scales.y.stacked = true; }
@@ -2144,50 +2174,50 @@
                 }
             }
             else if (t === "pie" || t === "doughnut") {
-                type = t; const first = fields[0]; data = { labels, datasets: [{ label: first, data: vals(first), backgroundColor: source.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
+                type = t; const first = fields[0]; data = { labels, datasets: [{ label: first, data: vals(first), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: getLegendConfig(true, 10) } };
             }
             else if (t === "treemap") {
                 type = "treemap";
                 const first = fields[0];
-                data = { datasets: [{ tree: source.map(r => Number(r[first]) || 0), key: "value", groups: [cfg.labelField], backgroundColor: (ctx) => colors[ctx.dataIndex % colors.length], labels: { display: true, formatter: ctx => ctx.raw?.g?.[0] ?? ctx.raw?.v ?? "" } }] };
+                data = { datasets: [{ tree: displaySource.map(r => ({ label: r._label, value: Number(r[first]) || 0 })), key: "value", groups: ["label"], backgroundColor: (ctx) => colors[ctx.dataIndex % colors.length], labels: { display: true, formatter: ctx => ctx.raw?.g?.[0] ?? ctx.raw?.v ?? "" } }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: getLegendConfig(false) } };
             }
             else if (t === "sunburst") {
                 type = "doughnut";
                 const first = fields[0];
                 data = {
-                    labels, datasets: [{ label: first, data: vals(first), backgroundColor: source.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2, weight: 1 },
-                    { label: "Komposisi", data: vals(first).map(v => Math.sqrt(Math.abs(v))), backgroundColor: source.map((_, i) => colors[(i + 3) % colors.length] + "99"), borderColor: "#fff", borderWidth: 1, weight: .55 }]
+                    labels, datasets: [{ label: first, data: vals(first), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2, weight: 1 },
+                    { label: "Komposisi", data: vals(first).map(v => Math.sqrt(Math.abs(v))), backgroundColor: displaySource.map((_, i) => colors[(i + 3) % colors.length] + "99"), borderColor: "#fff", borderWidth: 1, weight: .55 }]
                 };
                 options = { responsive: true, maintainAspectRatio: false, cutout: "28%", plugins: { legend: getLegendConfig(true, 10) } };
             }
             else if (t === "gauge" || t === "progress") {
-                const v = Number(source[0]?.[fields[0]]) || 0, target = Math.max(Number(source[1]?.[fields[0]]) || 100, 1), pct = Math.max(0, Math.min(100, v / target * 100));
+                const v = Number(displaySource[0]?.[fields[0]]) || 0, target = Math.max(Number(displaySource[1]?.[fields[0]]) || 100, 1), pct = Math.max(0, Math.min(100, v / target * 100));
                 type = "doughnut"; data = { labels: ["Tercapai", "Sisa"], datasets: [{ data: [pct, 100 - pct], backgroundColor: [colors[0], "#e5e7eb"], borderWidth: 0 }] };
                 options = { responsive: true, maintainAspectRatio: false, rotation: -90, circumference: 180, cutout: "68%", plugins: { legend: { display: false }, tooltip: { enabled: false } } };
             }
             else if (t === "kpi") {
-                type = "doughnut"; const v = Number(source[0]?.[fields[0]]) || 0;
+                type = "doughnut"; const v = Number(displaySource[0]?.[fields[0]]) || 0;
                 data = { labels: [fields[0]], datasets: [{ data: [1], backgroundColor: [colors[0]], borderWidth: 0 }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false }, title: { display: true, text: String(v.toLocaleString("id-ID")), font: { size: 28, weight: "800" }, padding: { top: 60, bottom: 20 } } } };
             }
             else if (t === "bullet") {
-                type = "bar"; const v = Number(source[0]?.[fields[0]]) || 0, target = Number(source[1]?.[fields[0]]) || 100;
+                type = "bar"; const v = Number(displaySource[0]?.[fields[0]]) || 0, target = Number(displaySource[1]?.[fields[0]]) || 100;
                 data = { labels: [labels[0] || "KPI"], datasets: [{ label: "Target", data: [target], backgroundColor: "#d1d5db", barThickness: 24 }, { label: "Realisasi", data: [v], backgroundColor: colors[0], barThickness: 12 }] };
                 options.indexAxis = "y"; options.plugins.legend.display = true;
             }
             else if (t === "radialBar") {
-                type = "doughnut"; data = { labels, datasets: [{ data: vals(fields[0]), backgroundColor: source.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
+                type = "doughnut"; data = { labels, datasets: [{ data: vals(fields[0]), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
                 options = { responsive: true, maintainAspectRatio: false, cutout: "45%", plugins: { legend: getLegendConfig(true, 9) } };
             }
             else if (t === "scatter") {
                 type = "scatter"; const xField = fields[0], yField = fields[1] || fields[0];
-                data = { datasets: [{ label: xField + " vs " + yField, data: source.map((r, i) => ({ x: Number(r[xField]) || 0, y: Number(r[yField]) || 0 })), backgroundColor: colors[0] }] };
+                data = { datasets: [{ label: xField + " vs " + yField, data: displaySource.map((r, i) => ({ x: Number(r[xField]) || 0, y: Number(r[yField]) || 0 })), backgroundColor: colors[0] }] };
             }
             else if (t === "bubble") {
                 type = "bubble"; const xField = fields[0], yField = fields[1] || fields[0], rField = fields[2] || fields[0];
-                data = { datasets: [{ label: xField + " / " + yField, data: source.map(r => ({ x: Number(r[xField]) || 0, y: Number(r[yField]) || 0, r: Math.max(3, Math.sqrt(Math.abs(Number(r[rField]) || 0)) / 5) })), backgroundColor: colors[0] + "99" }] };
+                data = { datasets: [{ label: xField + " / " + yField, data: displaySource.map(r => ({ x: Number(r[xField]) || 0, y: Number(r[yField]) || 0, r: Math.max(3, Math.sqrt(Math.abs(Number(r[rField]) || 0)) / 5) })), backgroundColor: colors[0] + "99" }] };
             }
             else if (t === "histogram") {
                 type = "bar"; const raw = vals(fields[0]).filter(v => Number.isFinite(v)); const n = Math.min(10, Math.max(5, Math.ceil(Math.sqrt(raw.length || 1))));
@@ -2203,7 +2233,7 @@
                 data = { labels, datasets: [{ label: fields[0], data: floating, backgroundColor: raw.map(v => v >= 0 ? colors[1] + "CC" : colors[4] + "CC"), borderColor: raw.map(v => v >= 0 ? colors[1] : colors[4]), borderWidth: 1 }] };
             }
             else if (t === "funnel") {
-                type = "funnel"; const first = fields[0]; data = { labels, datasets: [{ label: first, data: vals(first), backgroundColor: source.map((_, i) => colors[i % colors.length]) }] };
+                type = "funnel"; const first = fields[0]; data = { labels, datasets: [{ label: first, data: vals(first), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]) }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
             }
             else if (t === "timeline" || t === "gantt") {
