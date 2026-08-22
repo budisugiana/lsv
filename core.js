@@ -502,7 +502,7 @@ const CORE_MODALS_HTML = `
         </div>
     </div>
 
-    ;
+    ` ;
 
 document.addEventListener("DOMContentLoaded", () => {
     document.body.insertAdjacentHTML('beforeend', CORE_MODALS_HTML);
@@ -2681,6 +2681,7 @@ let allData = [];
                 case "text": default: return escapeHtml(v);
             }
         }
+
 
 
 
