@@ -62,10 +62,10 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 <div class="app-shell">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">IC</div>
+      <div class="brand-mark">LSV</div>
       <div>
-        <div class="brand-title">ICMS</div>
-        <div class="brand-subtitle">Training Management</div>
+        <div class="brand-title">Kartu Kontrol</div>
+        <div class="brand-subtitle">Budget Monitoring</div>
       </div>
     </div>
     <hr>
@@ -79,9 +79,23 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
                 <a href="keu_portal.html" style="padding-left:32px">↳ PORTAL</a>
                 <a id="navUsers" href="users.html" style="display:none">⚿ KELOLA USER</a>
               </nav>
-    <div class="sidebar-bottom">
-      <div class="small" id="whoami">Memuat...</div>
-      <button class="btn gray" style="width:100%;margin-top:8px" onclick="logout()">🚪 Logout</button>
+        <div class="sidebar-bottom">
+        <div class="small" id="whoami" style="margin-bottom:8px">Memuat...</div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.15);">
+            <span style="font-size:11px;font-weight:600;opacity:0.8">◚ Ukuran Font</span>
+            <div style="display:flex;gap:4px">
+                <button onclick="changeFontSize(-1)" class="edit-toggle-btn active" style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perkecil Text">A-</button>
+                <button onclick="changeFontSize(1)" class="edit-toggle-btn active" style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perbesar Text">A+</button>
+            </div>
+        </div>
+
+        <div id="adminEditPanel" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;border-top:1px solid rgba(255,255,255,.0);padding-top:0px">
+            <span style="font-size:11px;font-weight:600;opacity:0.8">🛠️ Panel Edit</span>
+            <button id="globalEditToggleBtn" class="edit-toggle-btn active" onclick="toggleAllEditPanels()" style="padding:5px 8px;font-size:10px;border-radius:5px" title="Tampilkan/Sembunyikan semua tombol edit">👁️ Sembunyikan</button>
+        </div>
+        <button class="btn gray" style="width:100%" onclick="logout()">🚪 Logout</button>
+        <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.5);margin-top:14px;font-style:italic;letter-spacing:0.3px">Powered by AI, Built on Experience. - BNI University</div>
     </div>
   </aside>
 
@@ -150,6 +164,21 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-ser
 const API_URL = "https://script.google.com/macros/s/AKfycbyJoZ2eU7rcPjoiQDERgrwAu2_wSL-AQ9wP46-7neFspaXYIVHDyD4F1p6q4XCBWVMx/exec";
 const API_KEY = "2026-BNU-KARTUKONTROL";
 const SHEET_NAME = "keu_smarter";
+let _currentZoom = 1;
+function changeFontSize(step) {
+    _currentZoom += step * 0.05;
+    if (_currentZoom < 0.7) _currentZoom = 0.7;
+    if (_currentZoom > 1.4) _currentZoom = 1.4;
+    document.querySelector('.main').style.zoom = _currentZoom;
+}
+
+function toggleAllEditPanels() {
+    const btns = document.querySelectorAll('.icon-btn, .btn.cyan, .btn.red, .btn.purple, .btn.orange');
+    const toggleBtn = document.getElementById('globalEditToggleBtn');
+    const isHidden = toggleBtn.textContent.includes('Tampilkan');
+    btns.forEach(b => b.style.display = isHidden ? '' : 'none');
+    toggleBtn.textContent = isHidden ? '👁\uFE0F Sembunyikan' : '👁\uFE0F Tampilkan';
+}
 // ============================================================
 
 const PAGE_SIZE = 50;
