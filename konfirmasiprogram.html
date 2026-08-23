@@ -745,6 +745,7 @@
         }
 
         .form-grid input,
+        .form-grid select,
         .form-grid textarea {
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -1309,10 +1310,10 @@
     <div class="app-shell">
         <aside class="sidebar">
             <div class="brand">
-                <div class="brand-mark">IC</div>
+                <div class="brand-mark">LSV</div>
                 <div>
-                    <div class="brand-title">ICMS</div>
-                    <div class="brand-subtitle">Training Management</div>
+                    <div class="brand-title">Kartu Kontrol</div>
+                    <div class="brand-subtitle">Budget Monitoring</div>
                 </div>
             </div>
             <hr>
@@ -1359,7 +1360,8 @@
 
 
                 <h1 id="summaryTitle">Rekap Program</h1>
-                <p style="font-size:12px;opacity:.8;margin:5px 0 18px">Rekap gabungan program: UIC, subprogram, pengelola, periode, metode, Jumlah Batch, learner, dan biaya pelatihan.</p>
+                <p style="font-size:12px;opacity:.8;margin:5px 0 18px">Rekap gabungan program: UIC, subprogram,
+                    pengelola, periode, metode, Jumlah Batch, learner, dan biaya pelatihan.</p>
 
                 <script>
                     function formatText(property, value) {
@@ -1369,8 +1371,12 @@
 
                 <div class="filter-title">🔎 Filter Data (berlaku untuk semua paket tabel)</div>
                 <div class="filters">
-                    <select id="filterUic"><option value="">Semua UIC</option></select>
-                    <select id="filterMetode"><option value="">Semua Metode</option></select>
+                    <select id="filterUic">
+                        <option value="">Semua UIC</option>
+                    </select>
+                    <select id="filterMetode">
+                        <option value="">Semua Metode</option>
+                    </select>
                     <input id="searchInput" placeholder="Program / subprogram / pengelola...">
                     <button class="btn primary" onclick="applyFilters()">🔎 Terapkan</button>
                     <button class="btn gray" onclick="resetFilters()">↺ Reset</button>
@@ -1981,6 +1987,7 @@
 
         let allData = [];
         let filteredData = [];
+        let rkaProgramsData = [];
         const rowDataMap = new Map(); // lookup rowKey -> data baris (dipakai tombol Edit/Hapus di semua paket)
 
         // ============================================================
@@ -2863,9 +2870,44 @@
             });
         }
 
+        // Helper function to update program dropdown options based on UIC input
+        function updateProgramDropdown() {
+            const uicVal = (document.getElementById("f_uic")?.value || "").trim().toLowerCase();
+            const programSelect = document.getElementById("f_program");
+            if (!programSelect) return;
+
+            const currentVal = programSelect.dataset.pendingValue || programSelect.value;
+
+            // Filter from learning_plan_realisasi sheet data (rkaProgramsData)
+            const filteredPrograms = rkaProgramsData.filter(r => {
+                const rUic = String(r.uic || "").trim().toLowerCase();
+                return rUic === uicVal;
+            });
+
+            // Extract unique program names (nama_program)
+            const uniquePrograms = [...new Set(filteredPrograms.map(r => String(r.nama_program || "").trim()))].filter(Boolean).sort();
+
+            let html = `<option value="">-- Pilih Program --</option>`;
+            uniquePrograms.forEach(p => {
+                html += `<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`;
+            });
+            programSelect.innerHTML = html;
+
+            if (uniquePrograms.includes(currentVal)) {
+                programSelect.value = currentVal;
+            } else {
+                programSelect.value = "";
+            }
+            delete programSelect.dataset.pendingValue;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             initAuthUI();
             buildForm();
+
+            // Bind update dynamic program dropdown
+            document.getElementById("f_uic")?.addEventListener("change", updateProgramDropdown);
+
             charts = loadCharts();
             scorecards = loadScorecards();
             renderAllPacketShells();
@@ -3040,11 +3082,19 @@
                 return `<div class="form-section">
       <div class="form-section-title">${g}</div>
       <div class="form-grid${isMonthGroup ? " months" : ""}">
-        ${fields.map(f => `<label class="${f.full ? 'full' : ''}">${f.label}
-          ${f.type === "textarea" || f.key === "program" || f.key === "subprogram"
-            ? `<textarea id="f_${cssKey(f.key)}"></textarea>`
-            : `<input id="f_${cssKey(f.key)}" type="${f.type === 'date' ? 'datetime-local' : (f.type === 'number' ? 'number' : 'text')}" ${f.type === 'number' ? 'step="0.01"' : ''}>`}
-        </label>`).join("")}
+        ${fields.map(f => {
+            let inputHtml = "";
+            if (f.key === "program") {
+                inputHtml = `<select id="f_program"></select>`;
+            } else if (f.type === "textarea" || f.key === "subprogram") {
+                inputHtml = `<textarea id="f_${cssKey(f.key)}"></textarea>`;
+            } else {
+                inputHtml = `<input id="f_${cssKey(f.key)}" type="${f.type === 'date' ? 'datetime-local' : (f.type === 'number' ? 'number' : 'text')}" ${f.type === 'number' ? 'step="0.01"' : ''}>`;
+            }
+            return `<label class="${f.full ? 'full' : ''}">${f.label}
+              ${inputHtml}
+            </label>`;
+        }).join("")}
       </div>
     </div>`;
             }).join("");
@@ -3188,6 +3238,15 @@
                 const result = await apiGet({ action: "list" });
                 allData = Array.isArray(result.data) ? result.data : [];
                 ensureLocalRowKeys(allData);
+
+                // Load RKA data for program dropdown filtering
+                try {
+                    const rkaResult = await apiGet({ action: "list", sheet: "learning_plan_realisasi" });
+                    rkaProgramsData = Array.isArray(rkaResult.data) ? rkaResult.data : [];
+                } catch (e) {
+                    console.error("Gagal memuat data RKA:", e);
+                }
+
                 buildFilters();
                 applyFilters();
                 showAlert(`${allData.length.toLocaleString("id-ID")} data berhasil dimuat ke 5 paket tabel.`, "success");
@@ -3649,6 +3708,12 @@
                         align: st.align !== undefined ? st.align : colSt.align,
                         wrap: colSt.wrap
                     };
+
+                    // Requirement 1: If program or pengelola columns are empty, give them a soft red background
+                    if ((f.key === "program" || f.key === "pengelola") && (!r[f.key] || String(r[f.key]).trim() === "")) {
+                        merged.bg = "#ffe3e3";
+                    }
+
                     const cellParts = [];
                     if (merged.bg) cellParts.push(`background:${merged.bg}`);
                     if (merged.color) cellParts.push(`color:${merged.color}`);
@@ -4089,6 +4154,18 @@
             document.getElementById("dataForm").reset();
             document.getElementById("f_id").value = "";
             document.getElementById("modalTitle").textContent = "➕ Tambah Program";
+
+            // Reset dropdown pending value & trigger dropdown update
+            const programSelect = document.getElementById("f_program");
+            if (programSelect) delete programSelect.dataset.pendingValue;
+            updateProgramDropdown();
+
+            // Reset field background styles
+            const programEl = document.getElementById("f_program");
+            const pengelolaEl = document.getElementById("f_pengelola");
+            if (programEl) programEl.style.backgroundColor = "";
+            if (pengelolaEl) pengelolaEl.style.backgroundColor = "";
+
             document.getElementById("modal").classList.remove("hidden");
         }
         function openEdit(r) {
@@ -4098,8 +4175,24 @@
                 const el = document.getElementById("f_" + cssKey(f.key));
                 if (!el) return;
                 if (f.type === "date") el.value = toLocal(r[f.key]);
-                else el.value = r[f.key] ?? "";
+                else {
+                    if (f.key === "program") {
+                        el.dataset.pendingValue = r[f.key] ?? "";
+                    } else {
+                        el.value = r[f.key] ?? "";
+                    }
+                }
             });
+
+            // Update dropdown list based on UIC value in edited row
+            updateProgramDropdown();
+
+            // Requirement 2: Style program and pengelola slightly darker in the edit popup
+            const programEl = document.getElementById("f_program");
+            const pengelolaEl = document.getElementById("f_pengelola");
+            if (programEl) programEl.style.backgroundColor = "#cbd5e1"; // Tailwind's soft gray-300 / slate-300
+            if (pengelolaEl) pengelolaEl.style.backgroundColor = "#cbd5e1";
+
             document.getElementById("modal").classList.remove("hidden");
         }
         function closeModal() { document.getElementById("modal").classList.add("hidden") }
