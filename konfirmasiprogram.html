@@ -1779,7 +1779,7 @@
             <div class="form-section">
                 <div class="form-section-title">Tipe Grafik</div>
                 <div class="fmt-row">
-                    <select id="chart_type"
+                    <select id="chart_type" onchange="onChartTypeChange()"
                         style="flex:1;border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:12px;width:100%">
                         <optgroup label="📊 Grafik Perbandingan">
                             <option value="bar">1. 📊 Column Chart — Grafik Kolom</option>
@@ -1790,6 +1790,7 @@
                             </option>
                             <option value="clusteredBar">6. 📊 Clustered Bar Chart — Batang Berkelompok</option>
                             <option value="stackedBar">7. 📊 Stacked Bar Chart — Batang Bertumpuk</option>
+                            <option value="programSummaryBar">★ 📊 Ringkasan Pengisian Program (3 Bar)</option>
                         </optgroup>
                         <optgroup label="📈 Grafik Tren">
                             <option value="line">8. 📈 Line Chart — Grafik Garis</option>
@@ -1830,7 +1831,7 @@
                 </div>
             </div>
 
-            <div class="form-section">
+            <div class="form-section" id="chartSectionLabel">
                 <div class="form-section-title">Kolom Label (Sumbu X / Kategori)</div>
                 <div style="font-size:10px;color:var(--muted);margin-bottom:6px">Bisa dipilih dari kolom teks (mis.
                     Anggaran UNIT) maupun kolom angka (mis. BLN 1, TOTAL BLN, dll.) sesuai kategori yang ingin
@@ -1841,7 +1842,7 @@
                 </div>
             </div>
 
-            <div class="form-section">
+            <div class="form-section" id="chartSectionLabelValues">
                 <div class="form-section-title">Isi Kategori yang Ditampilkan</div>
                 <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Centang isi/nilai dari kolom label di
                     atas yang ingin ditampilkan pada grafik. Semua tercentang = tampilkan semua isi (otomatis mengikuti
@@ -1854,14 +1855,14 @@
                 <div class="colpick-list" id="chartLabelValues" style="max-height:220px;overflow:auto"></div>
             </div>
 
-            <div class="form-section">
+            <div class="form-section" id="chartSectionValueFields">
                 <div class="form-section-title">Kolom Nilai (Sumbu Y) — bisa pilih lebih dari satu</div>
                 <div class="colpick-groups" id="chartValueGroups" style="max-height:260px"></div>
             </div>
 
             <div class="form-section">
                 <div class="form-section-title">Pengurutan & Batas Data</div>
-                <div class="fmt-row" style="margin-bottom:8px">
+                <div class="fmt-row" style="margin-bottom:8px" id="chartSortRow">
                     <input type="checkbox" id="chart_sort"> Urutkan dari nilai tertinggi (berdasarkan kolom nilai
                     pertama)
                 </div>
@@ -1878,7 +1879,7 @@
                         <option value="milyar">Dalam Milyar (1,5 M)</option>
                     </select>
                 </div>
-                <div class="fmt-row">
+                <div class="fmt-row" id="chartTopNRow">
                     <span>Tampilkan Top N baris</span>
                     <input type="number" id="chart_topn" min="0" step="1" value="0">
                     <span class="fmt-unit">(0 = semua)</span>
@@ -2063,7 +2064,8 @@
                 gauge: "Gauge Chart", bullet: "Bullet Chart", progress: "Progress Chart", kpi: "KPI Card", radialBar: "Radial Bar Chart",
                 scatter: "Scatter Plot", bubble: "Bubble Chart", histogram: "Histogram", boxplot: "Box & Whisker Chart",
                 waterfall: "Waterfall Chart", funnel: "Funnel Chart", timeline: "Timeline Chart", gantt: "Gantt Chart",
-                calendarHeatmap: "Calendar Heatmap", heatmap: "Heatmap"
+                calendarHeatmap: "Calendar Heatmap", heatmap: "Heatmap",
+                programSummaryBar: "Ringkasan Pengisian Program"
             };
             return m[t] || t;
         }
@@ -2138,7 +2140,7 @@
             const primaryField = fields[0];
 
             let displaySource = source;
-            const isAggregatedType = !["scatter", "bubble", "histogram", "boxplot"].includes(t);
+            const isAggregatedType = !["scatter", "bubble", "histogram", "boxplot", "programSummaryBar"].includes(t);
             if (isAggregatedType) {
                 // Group & Sum by labelField
                 const groupedMap = new Map();
@@ -2194,7 +2196,25 @@
 
             let type = "bar", data = { labels, datasets }, options = chartBaseOptions();
 
-            if (t === "barh") { type = "bar"; options.indexAxis = "y"; }
+            if (t === "programSummaryBar") {
+                const totalKelas = source.length;
+                const programTerisi = source.filter(r => r.program && String(r.program).trim() !== "").length;
+                const programBelumTerisi = source.filter(r => !r.program || String(r.program).trim() === "").length;
+
+                type = "bar";
+                data = {
+                    labels: ["Total Kelas", "Program Terisi", "Program Belum Terisi"],
+                    datasets: [{
+                        label: "Jumlah",
+                        data: [totalKelas, programTerisi, programBelumTerisi],
+                        backgroundColor: [CHART_PALETTE[0] + "CC", CHART_PALETTE[1] + "CC", CHART_PALETTE[2] + "CC"],
+                        borderColor: [CHART_PALETTE[0], CHART_PALETTE[1], CHART_PALETTE[2]],
+                        borderWidth: 1
+                    }]
+                };
+                options = chartBaseOptions();
+            }
+            else if (t === "barh") { type = "bar"; options.indexAxis = "y"; }
             else if (t === "clusteredColumn") { type = "bar"; options.scales.x.stacked = false; options.scales.y.stacked = false; }
             else if (t === "stackedColumn") { type = "bar"; options.scales.x.stacked = true; options.scales.y.stacked = true; }
             else if (t === "stacked100Column") {
@@ -2481,6 +2501,17 @@
             document.querySelectorAll("#chartLabelValues input[data-chartlabelvalue]").forEach(el => { el.checked = state; });
             updateChartLabelValuesCount();
         }
+        function onChartTypeChange() {
+            const type = document.getElementById("chart_type").value;
+            const isSpecial = (type === "programSummaryBar");
+            
+            document.getElementById("chartSectionLabel")?.classList.toggle("hidden", isSpecial);
+            document.getElementById("chartSectionLabelValues")?.classList.toggle("hidden", isSpecial);
+            document.getElementById("chartSectionValueFields")?.classList.toggle("hidden", isSpecial);
+            document.getElementById("chartSortRow")?.classList.toggle("hidden", isSpecial);
+            document.getElementById("chartTopNRow")?.classList.toggle("hidden", isSpecial);
+        }
+
         function openChartModal(chartId) {
             const existing = chartId ? charts.find(c => c.id === chartId) : null;
             const cfg = existing || {
@@ -2512,6 +2543,9 @@
             document.getElementById("chart_topn").value = cfg.topN || 0;
 
             document.getElementById("chartModal").dataset.newId = existing ? "" : cfg.id;
+            
+            onChartTypeChange();
+            
             document.getElementById("chartModal").classList.remove("hidden");
         }
         function closeChartModal() { document.getElementById("chartModal").classList.add("hidden"); }
@@ -2520,34 +2554,45 @@
             const newId = document.getElementById("chartModal").dataset.newId;
             const id = existingId || newId;
 
-            const valueFields = Array.from(document.querySelectorAll("#chartValueGroups input[data-chartvaluekey]:checked"))
-                .map(el => el.dataset.chartvaluekey);
-            if (!valueFields.length) { showAlert("Pilih minimal 1 kolom nilai (sumbu Y) untuk grafik.", "error"); return; }
+            const type = document.getElementById("chart_type").value;
+            const isSpecial = (type === "programSummaryBar");
 
-            const allLabelCheckboxes = Array.from(document.querySelectorAll("#chartLabelValues input[data-chartlabelvalue]"));
-            const checkedLabelValues = allLabelCheckboxes.filter(el => el.checked).map(el => el.dataset.chartlabelvalue);
-            if (allLabelCheckboxes.length && !checkedLabelValues.length) { showAlert("Pilih minimal 1 isi kategori untuk ditampilkan pada grafik.", "error"); return; }
-            
-            // Cek apakah urutan di DOM sama dengan urutan default (alphabetical)
-            const defaultOrderValues = getUniqueChartLabelValues(document.getElementById("chart_labelField").value);
-            const currentDOMValues = allLabelCheckboxes.map(el => el.dataset.chartlabelvalue);
-            const isReordered = currentDOMValues.some((v, idx) => String(v) !== String(defaultOrderValues[idx]));
+            let valueFields = [];
+            if (isSpecial) {
+                valueFields = ["program"]; // dummy
+            } else {
+                valueFields = Array.from(document.querySelectorAll("#chartValueGroups input[data-chartvaluekey]:checked"))
+                    .map(el => el.dataset.chartvaluekey);
+                if (!valueFields.length) { showAlert("Pilih minimal 1 kolom nilai (sumbu Y) untuk grafik.", "error"); return; }
+            }
 
-            // Jika semua tercentang dan tidak di-reorder, simpan [] (otomatis ikut data baru).
-            const labelValues = (checkedLabelValues.length === allLabelCheckboxes.length && !isReordered) ? [] : checkedLabelValues;
+            let labelValues = [];
+            if (!isSpecial) {
+                const allLabelCheckboxes = Array.from(document.querySelectorAll("#chartLabelValues input[data-chartlabelvalue]"));
+                const checkedLabelValues = allLabelCheckboxes.filter(el => el.checked).map(el => el.dataset.chartlabelvalue);
+                if (allLabelCheckboxes.length && !checkedLabelValues.length) { showAlert("Pilih minimal 1 isi kategori untuk ditampilkan pada grafik.", "error"); return; }
+                
+                // Cek apakah urutan di DOM sama dengan urutan default (alphabetical)
+                const defaultOrderValues = getUniqueChartLabelValues(document.getElementById("chart_labelField").value);
+                const currentDOMValues = allLabelCheckboxes.map(el => el.dataset.chartlabelvalue);
+                const isReordered = currentDOMValues.some((v, idx) => String(v) !== String(defaultOrderValues[idx]));
+
+                // Jika semua tercentang dan tidak di-reorder, simpan [] (otomatis ikut data baru).
+                labelValues = (checkedLabelValues.length === allLabelCheckboxes.length && !isReordered) ? [] : checkedLabelValues;
+            }
 
             const cfg = {
                 id,
                 title: document.getElementById("chart_title").value.trim() || "Grafik Tanpa Judul",
-                type: document.getElementById("chart_type").value,
+                type,
                 row: Number(document.getElementById("chart_row").value) || 1,
-                labelField: document.getElementById("chart_labelField").value,
+                labelField: isSpecial ? "" : document.getElementById("chart_labelField").value,
                 valueFields,
                 labelValues,
-                sortDesc: document.getElementById("chart_sort").checked,
+                sortDesc: isSpecial ? false : document.getElementById("chart_sort").checked,
                 showLabels: document.getElementById("chart_showLabels").checked,
                 numberFormat: document.getElementById("chart_numberFormat").value || "full",
-                topN: Number(document.getElementById("chart_topn").value) || 0
+                topN: isSpecial ? 0 : (Number(document.getElementById("chart_topn").value) || 0)
             };
 
             const idx = charts.findIndex(c => c.id === id);
