@@ -1359,7 +1359,8 @@
 
 
                 <h1 id="summaryTitle">Learning Plan &amp; Realisasi Anggaran</h1>
-                <p style="font-size:12px;opacity:.8;margin:5px 0 18px">Tracking program, periode pelaksanaan, realisasi bulanan, dan akrual biaya per program.</p>
+                <p style="font-size:12px;opacity:.8;margin:5px 0 18px">Tracking program, periode pelaksanaan, realisasi
+                    bulanan, dan akrual biaya per program.</p>
 
                 <script>
                     function formatText(property, value) {
@@ -1369,9 +1370,15 @@
 
                 <div class="filter-title">🔎 Filter Data (berlaku untuk semua paket tabel)</div>
                 <div class="filters">
-                    <select id="filterUic"><option value="">Semua UIC</option></select>
-                    <select id="filterStatusRealisasi"><option value="">Semua Status Progress</option></select>
-                    <select id="filterStatusProgram"><option value="">Semua Status Pelaksanaan</option></select>
+                    <select id="filterUic">
+                        <option value="">Semua UIC</option>
+                    </select>
+                    <select id="filterStatusRealisasi">
+                        <option value="">Semua Status Progress</option>
+                    </select>
+                    <select id="filterStatusProgram">
+                        <option value="">Semua Status Pelaksanaan</option>
+                    </select>
                     <input id="searchInput" placeholder="Nama program / learning goals...">
                     <button class="btn primary" onclick="applyFilters()">🔎 Terapkan</button>
                     <button class="btn gray" onclick="resetFilters()">↺ Reset</button>
@@ -2046,7 +2053,7 @@
           <div class="chart-card-header">
             <div>
               <div class="chart-card-title">${escapeHtml(cfg.title || "Grafik")}</div>
-              <div class="chart-card-sub">${escapeHtml(chartTypeLabel(cfg.type))} • ${escapeHtml((cfg.valueFields || []).join(", "))}</div>
+              <div class="chart-card-sub">${escapeHtml(chartTypeLabel(cfg.type))} • ${escapeHtml((cfg.valueFields || []).map(f => f === "__COUNT__" ? "Jumlah Baris" : f).join(", "))}</div>
             </div>
             <div class="chart-card-actions">
               <button class="icon-btn edit" data-chart-action="edit" data-chart-id="${escapeAttr(cfg.id)}" title="Edit grafik">✏️</button>
@@ -2142,7 +2149,11 @@
                     }
                     const entry = groupedMap.get(key);
                     fields.forEach(f => {
-                        entry[f] += Number(r[f]) || 0;
+                        if (f === "__COUNT__") {
+                            entry[f] += 1;
+                        } else {
+                            entry[f] += Number(r[f]) || 0;
+                        }
                     });
                 });
                 displaySource = Array.from(groupedMap.values());
@@ -2163,7 +2174,7 @@
             const colors = CHART_PALETTE;
             const vals = f => displaySource.map(r => Number(r[f]) || 0);
             const datasets = fields.map((vf, i) => ({
-                label: vf, data: vals(vf), backgroundColor: colors[i % colors.length] + "CC",
+                label: vf === "__COUNT__" ? "Jumlah Baris" : vf, data: vals(vf), backgroundColor: colors[i % colors.length] + "CC",
                 borderColor: colors[i % colors.length], borderWidth: 1, fill: false, tension: .25
             }));
 
@@ -2189,7 +2200,7 @@
                 }
             }
             else if (t === "pie" || t === "doughnut") {
-                type = t; const first = fields[0]; data = { labels, datasets: [{ label: first, data: vals(first), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
+                type = t; const first = fields[0]; data = { labels, datasets: [{ label: first === "__COUNT__" ? "Jumlah Baris" : first, data: vals(first), backgroundColor: displaySource.map((_, i) => colors[i % colors.length]), borderColor: "#fff", borderWidth: 2 }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: getLegendConfig(true, 10) } };
             }
             else if (t === "treemap") {
@@ -2214,7 +2225,7 @@
             }
             else if (t === "kpi") {
                 type = "doughnut"; const v = Number(displaySource[0]?.[fields[0]]) || 0;
-                data = { labels: [fields[0]], datasets: [{ data: [1], backgroundColor: [colors[0]], borderWidth: 0 }] };
+                data = { labels: [fields[0] === "__COUNT__" ? "Jumlah Baris" : fields[0]], datasets: [{ data: [1], backgroundColor: [colors[0]], borderWidth: 0 }] };
                 options = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: false }, title: { display: true, text: String(v.toLocaleString("id-ID")), font: { size: 28, weight: "800" }, padding: { top: 60, bottom: 20 } } } };
             }
             else if (t === "bullet") {
@@ -2274,7 +2285,17 @@
 
         function renderChartValueFieldGroups(selected) {
             const wrap = document.getElementById("chartValueGroups");
-            wrap.innerHTML = GROUPS.map(g => {
+            let html = `<div class="colpick-group">
+      <div class="colpick-group-title"><span>Agregasi Dasar</span></div>
+      <div class="colpick-list">
+        <label>
+          <input type="checkbox" data-chartvaluekey="__COUNT__" ${selected.includes("__COUNT__") ? "checked" : ""}>
+          🔢 Jumlah Baris / Data (Count)
+        </label>
+      </div>
+    </div>`;
+
+            html += GROUPS.map(g => {
                 const fields = FIELD_DEFS.filter(f => f.group === g && f.type === "number");
                 if (!fields.length) return "";
                 return `<div class="colpick-group">
@@ -2287,6 +2308,7 @@
       </div>
     </div>`;
             }).join("");
+            wrap.innerHTML = html;
         }
         function populateChartLabelFieldSelect(selectedField) {
             const sel = document.getElementById("chart_labelField");
@@ -3073,8 +3095,8 @@
       <div class="form-grid${isMonthGroup ? " months" : ""}">
         ${fields.map(f => `<label class="${f.full ? "full" : ""}">${f.label}
           ${f.type === "textarea"
-            ? `<textarea id="f_${cssKey(f.key)}"></textarea>`
-            : `<input id="f_${cssKey(f.key)}" type="${f.type === 'date' ? 'datetime-local' : (f.type === 'number' ? 'number' : 'text')}" ${f.type === 'number' ? 'step="0.01"' : ''}>`}
+                        ? `<textarea id="f_${cssKey(f.key)}"></textarea>`
+                        : `<input id="f_${cssKey(f.key)}" type="${f.type === 'date' ? 'datetime-local' : (f.type === 'number' ? 'number' : 'text')}" ${f.type === 'number' ? 'step="0.01"' : ''}>`}
         </label>`).join("")}
       </div>
     </div>`;
