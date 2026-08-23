@@ -1409,7 +1409,7 @@
             <div id="chartsContainer"></div>
 
             <!-- ============================================================
-         5 PAKET TABEL dirender otomatis oleh JS ke dalam container ini.
+         Paket tabel dirender otomatis oleh JS ke dalam container ini.
          Setiap paket = 1 kartu (judul + tombol Pilih Kolom / Atur Warna
          Kolom / Edit Header & Judul Tabel + tabel + pager), semuanya
          membaca dari allData yang sama, tapi state kolom/warna/judul
@@ -2004,18 +2004,8 @@
             return [
                 {
                     id: "p1", icon: "📋",
-                    title: "Informasi Program & Periode",
-                    groups: ["Informasi Program", "Periode Pelaksanaan"]
-                },
-                {
-                    id: "p2", icon: "💰",
-                    title: "Progress, Biaya & Realisasi Bulanan",
-                    groups: ["Progress & Biaya", "Realisasi Bulanan"]
-                },
-                {
-                    id: "p3", icon: "🎯",
-                    title: "Cek & Akrual Biaya",
-                    groups: ["Cek & Akrual"]
+                    title: "Rencana Kerja Anggaran",
+                    groups: ["Informasi Program", "Periode Pelaksanaan", "Progress & Biaya", "Realisasi Bulanan", "Cek & Akrual"]
                 }
             ];
         }
@@ -2472,7 +2462,7 @@
         // tampilan per tabel (kolom, warna, urutan kolom, dst) tetap
         // tersimpan terpisah lewat lsKey() seperti sebelumnya.
         // ------------------------------------------------------------
-        const PACKET_LIST_KEY = "rka1_multi_packet_list_v1";
+        const PACKET_LIST_KEY = "rka1_multi_packet_list_v2";
         function loadPacketList() {
             try {
                 const raw = localStorage.getItem(PACKET_LIST_KEY);
@@ -2523,7 +2513,7 @@
         // URUTAN TABEL — bisa diubah dari frontend (drag & drop, atau tombol
         // ⬆️/⬇️) dan tersimpan di localStorage supaya persisten.
         // ------------------------------------------------------------
-        const PACKET_ORDER_KEY = "rka1_multi_packet_order_v1";
+        const PACKET_ORDER_KEY = "rka1_multi_packet_order_v2";
         function loadPacketOrder() {
             const defaultOrder = packetConfigs.map(c => c.id);
             try {
@@ -3092,7 +3082,7 @@
         }
 
         // ============================================================
-        // RENDER SHELL 5 PAKET (dipanggil sekali saat load)
+        // RENDER SHELL PAKET (dipanggil sekali saat load)
         // ============================================================
         function renderAllPacketShells() {
             const container = document.getElementById("packetsContainer");
@@ -3231,7 +3221,7 @@
                 ensureLocalRowKeys(allData);
                 buildFilters();
                 applyFilters();
-                showAlert(`${allData.length.toLocaleString("id-ID")} data berhasil dimuat ke 5 paket tabel.`, "success");
+                showAlert(`${allData.length.toLocaleString("id-ID")} data berhasil dimuat ke ${packets.length} paket tabel.`, "success");
             } catch (err) {
                 showAlert("Gagal memuat data: " + err.message, "error");
             }
