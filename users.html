@@ -76,7 +76,10 @@
             background: #007474;
             display: grid;
             place-items: center;
-            font-weight: 800
+            font-weight: 800;
+            font-size: 9px;
+            text-align: center;
+            padding: 4px
         }
 
         .brand-title {
@@ -400,7 +403,7 @@
                 </div>
             </div>
             <hr>
-                          <nav>
+            <nav>
                 <a href="index.html">▦ SUMMARY</a>
                 <a href="rka.html">▤ RENCANA KERJA ANGGARAN</a>
                 <a href="createkelas.html">⊞ PEMBUATAN KELAS</a>
@@ -408,23 +411,29 @@
                 <a href="pengeluaran.html">⛃ KONFIRMASI PEMBUKUAN (OSB)</a>
                 <a href="keu_smarter.html" style="padding-left:32px">↳ SMARTER</a>
                 <a href="keu_portal.html" style="padding-left:32px">↳ PORTAL</a>
-                <a class="active" id="navUsers" href="users.html">⚿ KELOLA USER</a>
-              </nav>
-                <div class="sidebar-bottom">
-        <div class="small" id="whoami" style="margin-bottom:8px">Memuat...</div>
+                <a href="keu_other.html" style="padding-left:32px">↳ OTHER</a>
+                <a class="active" id="navUsers" href="users.html" style="display:none">⚿ KELOLA USER</a>
+            </nav>
+            <div class="sidebar-bottom">
+                <div class="small" id="whoami" style="margin-bottom:8px">Memuat...</div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.15);">
-            <span style="font-size:11px;font-weight:600;opacity:0.8">◚ Ukuran Font</span>
-            <div style="display:flex;gap:4px">
-                <button onclick="changeFontSize(-1)" class="edit-toggle-btn active" style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perkecil Text">A-</button>
-                <button onclick="changeFontSize(1)" class="edit-toggle-btn active" style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perbesar Text">A+</button>
+                <div
+                    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.15);">
+                    <span style="font-size:11px;font-weight:600;opacity:0.8">◚ Ukuran Font</span>
+                    <div style="display:flex;gap:4px">
+                        <button onclick="changeFontSize(-1)" class="edit-toggle-btn active"
+                            style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perkecil Text">A-</button>
+                        <button onclick="changeFontSize(1)" class="edit-toggle-btn active"
+                            style="padding:2px 6px;font-size:11px;border-radius:4px" title="Perbesar Text">A+</button>
+                    </div>
+                </div>
+
+                <button class="btn gray" style="width:100%" onclick="logout()">🚪 Logout</button>
+                <div
+                    style="text-align:center;font-size:10px;color:rgba(255,255,255,0.5);margin-top:14px;font-style:italic;letter-spacing:0.3px">
+                    Powered by AI, Built on Experience. - BNI University</div>
             </div>
-        </div>
-
-        <button class="btn gray" style="width:100%" onclick="logout()">🚪 Logout</button>
-        <div style="text-align:center;font-size:10px;color:rgba(255,255,255,0.5);margin-top:14px;font-style:italic;letter-spacing:0.3px">Powered by AI, Built on Experience. - BNI University</div>
-    </div>
-  </aside>
+        </aside>
 
         <main class="main">
             <section class="hero">
@@ -494,13 +503,13 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyJoZ2eU7rcPjoiQDERgrwAu2_wSL-AQ9wP46-7neFspaXYIVHDyD4F1p6q4XCBWVMx/exec";
         const API_KEY = "2026-BNU-KARTUKONTROL";
         const SHEET_NAME = "users";
-let _currentZoom = 1;
-function changeFontSize(step) {
-    _currentZoom += step * 0.05;
-    if (_currentZoom < 0.7) _currentZoom = 0.7;
-    if (_currentZoom > 1.4) _currentZoom = 1.4;
-    document.querySelector('.main').style.zoom = _currentZoom;
-}
+        let _currentZoom = 1;
+        function changeFontSize(step) {
+            _currentZoom += step * 0.05;
+            if (_currentZoom < 0.7) _currentZoom = 0.7;
+            if (_currentZoom > 1.4) _currentZoom = 1.4;
+            document.querySelector('.main').style.zoom = _currentZoom;
+        }
         // ============================================================
 
         let allUsers = [];
