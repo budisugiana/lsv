@@ -1873,6 +1873,15 @@
                 <div class="fmt-row" style="margin-bottom:8px">
                     <input type="checkbox" id="chart_showLabels"> Tampilkan angka nilai pada grafik
                 </div>
+                <div class="fmt-row" style="margin-bottom:8px">
+                    <span>Format Angka</span>
+                    <select id="chart_numberFormat" style="flex:1;border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;margin-left:8px">
+                        <option value="full">Angka Penuh (1.500.000)</option>
+                        <option value="rupiah">Rupiah (Rp 1.500.000)</option>
+                        <option value="juta">Dalam Juta (1,5 Jt)</option>
+                        <option value="milyar">Dalam Milyar (1,5 Milyar)</option>
+                    </select>
+                </div>
                 <div class="fmt-row">
                     <span>Tampilkan Top N baris</span>
                     <input type="number" id="chart_topn" min="0" step="1" value="0">
@@ -2085,6 +2094,22 @@
             return m[t] || t;
         }
 
+        function formatChartValue(v, format) {
+            if (v === null || v === undefined || isNaN(v)) return '';
+            const num = Number(v);
+            switch (format) {
+                case 'rupiah':
+                    return 'Rp ' + num.toLocaleString('id-ID');
+                case 'juta':
+                    return (num / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' Jt';
+                case 'milyar':
+                    return (num / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' Milyar';
+                case 'full':
+                default:
+                    return num.toLocaleString('id-ID');
+            }
+        }
+
         function getLegendConfig(display = true, fontSize = 10) {
             return {
                 display,
@@ -2095,16 +2120,17 @@
                         try {
                             original = Chart.defaults.plugins.legend.labels.generateLabels(chart);
                         } catch (e) { return []; }
+                        const fmt = chart.options.plugins.tooltip?.numberFormat || 'full';
                         original.forEach(label => {
                             if (['pie', 'doughnut', 'polarArea'].includes(chart.config.type)) {
                                 const val = chart.data.datasets[0].data[label.index];
-                                if (val !== undefined) label.text = `${label.text} (${Number(val).toLocaleString('id-ID')})`;
+                                if (val !== undefined) label.text = `${label.text} (${formatChartValue(val, fmt)})`;
                             } else {
                                 const ds = chart.data.datasets[label.datasetIndex];
                                 if (ds && ds.data) {
                                     // Hitung total nilai jika legend mewakili satu dataset
                                     const sum = ds.data.reduce((a, b) => a + (Number(b) || 0), 0);
-                                    label.text = `${label.text} (${sum.toLocaleString('id-ID')})`;
+                                    label.text = `${label.text} (${formatChartValue(sum, fmt)})`;
                                 }
                             }
                         });
@@ -2279,6 +2305,19 @@
 
             // datalabels plugin configuration
             options.plugins = options.plugins || {};
+            options.plugins.tooltip = options.plugins.tooltip || {};
+            options.plugins.tooltip.numberFormat = cfg.numberFormat || 'full';
+            options.plugins.tooltip.callbacks = options.plugins.tooltip.callbacks || {};
+            options.plugins.tooltip.callbacks.label = (context) => {
+                const label = context.label || context.dataset.label || '';
+                let val = context.raw;
+                if (typeof val === 'object' && val !== null) {
+                    val = val.y !== undefined ? val.y : val.v;
+                }
+                const formatted = formatChartValue(val, cfg.numberFormat || 'full');
+                return `${label}: ${formatted}`;
+            };
+
             options.plugins.datalabels = {
                 display: cfg.showLabels !== false,
                 align: (context) => {
@@ -2291,10 +2330,11 @@
                 },
                 formatter: (value, context) => {
                     if (value === null || value === undefined) return '';
+                    let val = value;
                     if (typeof value === 'object') {
-                        return value.y !== undefined ? Number(value.y).toLocaleString('id-ID') : '';
+                        val = value.y !== undefined ? value.y : value.v;
                     }
-                    return Number(value).toLocaleString('id-ID');
+                    return formatChartValue(val, cfg.numberFormat || 'full');
                 },
                 font: {
                     size: 9,
@@ -2408,7 +2448,8 @@
                 labelValues: [],
                 sortDesc: true,
                 topN: 0,
-                showLabels: true
+                showLabels: true,
+                numberFormat: "full"
             };
             document.getElementById("chartModalTitle").textContent = existing ? "📈 Edit Grafik" : "📈 Tambah Grafik";
             document.getElementById("chart_id").value = existing ? existing.id : "";
@@ -2422,6 +2463,7 @@
             renderChartValueFieldGroups(cfg.valueFields || []);
             document.getElementById("chart_sort").checked = cfg.sortDesc !== false;
             document.getElementById("chart_showLabels").checked = cfg.showLabels !== false;
+            document.getElementById("chart_numberFormat").value = cfg.numberFormat || "full";
             document.getElementById("chart_topn").value = cfg.topN || 0;
 
             document.getElementById("chartModal").dataset.newId = existing ? "" : cfg.id;
@@ -2453,6 +2495,7 @@
                 labelValues,
                 sortDesc: document.getElementById("chart_sort").checked,
                 showLabels: document.getElementById("chart_showLabels").checked,
+                numberFormat: document.getElementById("chart_numberFormat").value || "full",
                 topN: Number(document.getElementById("chart_topn").value) || 0
             };
 
