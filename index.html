@@ -1352,7 +1352,7 @@
                 <button class="btn gray" style="width:100%" onclick="logout()">🚪 Logout</button>
                 <div
                     style="text-align:center;font-size:10px;color:rgba(255,255,255,0.5);margin-top:14px;font-style:italic;letter-spacing:0.3px">
-                    Powered by AI, Built on Experience. - BNI University</div>
+                    AI-Powered. Experience-Driven</div>
             </div>
         </aside>
 
@@ -1868,7 +1868,7 @@
                         <option value="full">Angka Penuh (1.500.000)</option>
                         <option value="rupiah">Rupiah (Rp 1.500.000)</option>
                         <option value="juta">Dalam Juta (1,5 Jt)</option>
-                        <option value="milyar">Dalam Milyar (1,5 Milyar)</option>
+                        <option value="milyar">Dalam Milyar (1,5 M)</option>
                     </select>
                 </div>
                 <div class="fmt-row">
@@ -2111,7 +2111,7 @@
                 case 'juta':
                     return (num / 1000000).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' Jt';
                 case 'milyar':
-                    return (num / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' Milyar';
+                    return (num / 1000000000).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' M';
                 case 'full':
                 default:
                     return num.toLocaleString('id-ID');
@@ -2167,7 +2167,21 @@
                 source = source.filter(r => allowed.has(String(r[cfg.labelField] ?? "")));
             }
             const primaryField = (cfg.valueFields || [])[0];
-            if (cfg.sortDesc && primaryField) source.sort((a, b) => (Number(b[primaryField]) || 0) - (Number(a[primaryField]) || 0));
+            if (cfg.sortDesc && primaryField) {
+                source.sort((a, b) => (Number(b[primaryField]) || 0) - (Number(a[primaryField]) || 0));
+            } else if (cfg.labelValues && cfg.labelValues.length) {
+                const labelOrder = {};
+                cfg.labelValues.forEach((val, idx) => {
+                    labelOrder[String(val).trim()] = idx;
+                });
+                source.sort((a, b) => {
+                    const labelA = String(a[cfg.labelField] ?? "").trim();
+                    const labelB = String(b[cfg.labelField] ?? "").trim();
+                    const idxA = labelOrder[labelA] !== undefined ? labelOrder[labelA] : 99999;
+                    const idxB = labelOrder[labelB] !== undefined ? labelOrder[labelB] : 99999;
+                    return idxA - idxB;
+                });
+            }
             if (cfg.topN && cfg.topN > 0) source = source.slice(0, cfg.topN);
 
             const labels = source.map(r => String(r[cfg.labelField] ?? ""));
@@ -2330,6 +2344,19 @@
                 options.plugins.datalabels = { display: false };
             }
 
+            // Apply number format to axis ticks
+            const isHorizontal = options.indexAxis === "y";
+            const valAxis = isHorizontal ? "x" : "y";
+            if (options.scales && options.scales[valAxis]) {
+                options.scales[valAxis].ticks = options.scales[valAxis].ticks || {};
+                options.scales[valAxis].ticks.font = options.scales[valAxis].ticks.font || { size: 9 };
+                if (cfg.type !== "stacked100Column") {
+                    options.scales[valAxis].ticks.callback = function(value) {
+                        return formatChartValue(value, cfg.numberFormat || 'full');
+                    };
+                }
+            }
+
             try {
                 chartInstances[cfg.id] = new Chart(canvas.getContext("2d"), { type, data, options, plugins: [ChartDataLabels] });
             } catch (err) {
@@ -2370,19 +2397,65 @@
             filteredData.forEach(r => { set.add(String(r[field] ?? "")); });
             return Array.from(set).sort((a, b) => a.localeCompare(b, "id", { numeric: true }));
         }
+        function moveChartLabelValue(btn, direction) {
+            const item = btn.closest('.colpick-item');
+            if (!item) return;
+            const parent = item.parentElement;
+            if (direction === -1) {
+                const prev = item.previousElementSibling;
+                if (prev) {
+                    parent.insertBefore(item, prev);
+                }
+            } else if (direction === 1) {
+                const next = item.nextElementSibling;
+                if (next) {
+                    parent.insertBefore(next, item);
+                }
+            }
+            updateChartLabelValuesCount();
+        }
+
         function renderChartLabelValueCheckboxes(field, selectedValues) {
             const wrap = document.getElementById("chartLabelValues");
             const values = getUniqueChartLabelValues(field);
-            // Jika belum pernah diatur (undefined) atau kosong = anggap semua tercentang.
+
+            // Urutkan values berdasarkan selectedValues jika ada
+            if (selectedValues && selectedValues.length) {
+                const selSet = new Set(selectedValues.map(String));
+                const orderMap = new Map();
+                selectedValues.forEach((v, i) => orderMap.set(String(v), i));
+
+                values.sort((a, b) => {
+                    const strA = String(a);
+                    const strB = String(b);
+                    const hasA = selSet.has(strA);
+                    const hasB = selSet.has(strB);
+                    if (hasA && hasB) {
+                        return orderMap.get(strA) - orderMap.get(strB);
+                    }
+                    if (hasA) return -1;
+                    if (hasB) return 1;
+                    return strA.localeCompare(strB, "id", { numeric: true });
+                });
+            }
+
             const allSelected = !selectedValues || !selectedValues.length;
             const selectedSet = new Set((selectedValues || []).map(String));
             if (!values.length) {
                 wrap.innerHTML = `<div style="font-size:10.5px;color:var(--muted)">Tidak ada data untuk kolom ini.</div>`;
             } else {
-                wrap.innerHTML = values.map(v => `<label>
-      <input type="checkbox" data-chartlabelvalue="${escapeAttr(v)}" ${allSelected || selectedSet.has(v) ? "checked" : ""}>
-      ${escapeHtml(v === "" ? "(kosong)" : v)}
-    </label>`).join("");
+                wrap.innerHTML = values.map(v => `
+<div class="colpick-item" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:3px 6px;border-radius:4px;border:1px solid rgba(0,0,0,0.03);margin-bottom:4px;background:rgba(0,0,0,0.01)">
+    <label style="flex:1;display:flex;align-items:center;gap:6px;margin:0;cursor:pointer;font-size:11px">
+        <input type="checkbox" data-chartlabelvalue="${escapeAttr(v)}" ${allSelected || selectedSet.has(v) ? "checked" : ""}>
+        <span>${escapeHtml(v === "" ? "(kosong)" : v)}</span>
+    </label>
+    <div style="display:flex;gap:3px">
+        <button type="button" class="miniBtn" onclick="moveChartLabelValue(this, -1)" style="padding:1px 4px;font-size:9px;line-height:1" title="Pindahkan Ke Atas">🔼</button>
+        <button type="button" class="miniBtn" onclick="moveChartLabelValue(this, 1)" style="padding:1px 4px;font-size:9px;line-height:1" title="Pindahkan Ke Bawah">🔽</button>
+    </div>
+</div>
+                `).join("");
             }
             updateChartLabelValuesCount();
         }
@@ -2446,8 +2519,14 @@
             const allLabelCheckboxes = Array.from(document.querySelectorAll("#chartLabelValues input[data-chartlabelvalue]"));
             const checkedLabelValues = allLabelCheckboxes.filter(el => el.checked).map(el => el.dataset.chartlabelvalue);
             if (allLabelCheckboxes.length && !checkedLabelValues.length) { showAlert("Pilih minimal 1 isi kategori untuk ditampilkan pada grafik.", "error"); return; }
-            // Jika semua isi tercentang, simpan array kosong = tidak difilter (otomatis ikut data baru).
-            const labelValues = (checkedLabelValues.length === allLabelCheckboxes.length) ? [] : checkedLabelValues;
+            
+            // Cek apakah urutan di DOM sama dengan urutan default (alphabetical)
+            const defaultOrderValues = getUniqueChartLabelValues(document.getElementById("chart_labelField").value);
+            const currentDOMValues = allLabelCheckboxes.map(el => el.dataset.chartlabelvalue);
+            const isReordered = currentDOMValues.some((v, idx) => String(v) !== String(defaultOrderValues[idx]));
+
+            // Jika semua tercentang dan tidak di-reorder, simpan [] (otomatis ikut data baru).
+            const labelValues = (checkedLabelValues.length === allLabelCheckboxes.length && !isReordered) ? [] : checkedLabelValues;
 
             const cfg = {
                 id,
