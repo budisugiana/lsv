@@ -35,6 +35,19 @@
                 `;
             }
 
+            // 2b. Top Panel (Hero / Filter Card) Color / Gradient
+            if (settings.heroBgColor) {
+                let heroVal = settings.heroBgColor;
+                if (settings.heroBgColor2) {
+                    heroVal = `linear-gradient(90deg, ${settings.heroBgColor}, ${settings.heroBgColor2})`;
+                }
+                css += `
+                    .hero {
+                        background: ${heroVal} !important;
+                    }
+                `;
+            }
+
             // 3. General Font Family
             if (settings.fontFamily) {
                 if (settings.fontFamily !== 'system-ui' && !document.getElementById('custom-font-link')) {
@@ -51,21 +64,29 @@
                 `;
             }
 
-            // 4. General Font Size
-            if (settings.fontSize) {
-                const fs = parseInt(settings.fontSize);
+            // 4. Sidebar Font Size (Tanpa !important agar dapat dioverride oleh inline style / menu edit)
+            if (settings.sidebarFontSize) {
                 css += `
-                    body, p, span, div:not(.brand-mark):not(.brand-title):not(.brand-subtitle) {
-                        font-size: ${fs}px !important;
+                    .sidebar, .sidebar nav a, .sidebar-bottom, .sidebar-bottom button, .sidebar-bottom span {
+                        font-size: ${settings.sidebarFontSize}px;
                     }
-                    input, select, button, textarea {
-                        font-size: ${fs}px !important;
+                `;
+            }
+
+            // 4b. Title / Header Font Size (Tanpa !important)
+            if (settings.titleFontSize) {
+                css += `
+                    h1, .hero h1, .preview-title, .section-title, .brand-title {
+                        font-size: ${settings.titleFontSize}px;
                     }
-                    th, td {
-                        font-size: ${Math.max(10, fs - 1.5)}px !important;
-                    }
-                    .sidebar nav a {
-                        font-size: ${Math.max(10, fs - 1)}px !important;
+                `;
+            }
+
+            // 4c. Table Font Size (Tanpa !important)
+            if (settings.tableFontSize) {
+                css += `
+                    table th, table td, table tr, th, td, tr, .preview-table th, .preview-table td {
+                        font-size: ${settings.tableFontSize}px;
                     }
                 `;
             }

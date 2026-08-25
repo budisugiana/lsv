@@ -582,7 +582,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">🎨 Skema Warna Custom</div>
+                        <div class="card-title">🎨 Kustomisasi Background & Aksen</div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -601,6 +601,18 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label>Warna Aksen Utama (Tombol, Brand)</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="accentColor" oninput="syncColorText('accentColor', 'accentColorText')">
+                                <input type="text" id="accentColorText" onchange="syncColorPicker('accentColorText', 'accentColor')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🎨 Kustomisasi Sidebar</div>
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Sidebar (Warna Atas)</label>
@@ -618,19 +630,31 @@
                             </div>
                         </div>
 
+                        <div class="form-group">
+                            <label>Warna Menu Sidebar Aktif</label>
+                            <div class="color-picker-wrapper">
+                                <input type="color" id="sidebarActiveColor" oninput="syncColorText('sidebarActiveColor', 'sidebarActiveColorText')">
+                                <input type="text" id="sidebarActiveColorText" onchange="syncColorPicker('sidebarActiveColorText', 'sidebarActiveColor')">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🎨 Kustomisasi Panel Atas (Hero & Filter)</div>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Warna Aksen Utama (Tombol, Brand)</label>
+                                <label>Panel Atas (Warna Kiri)</label>
                                 <div class="color-picker-wrapper">
-                                    <input type="color" id="accentColor" oninput="syncColorText('accentColor', 'accentColorText')">
-                                    <input type="text" id="accentColorText" onchange="syncColorPicker('accentColorText', 'accentColor')">
+                                    <input type="color" id="heroBgColor" oninput="syncColorText('heroBgColor', 'heroBgColorText')">
+                                    <input type="text" id="heroBgColorText" onchange="syncColorPicker('heroBgColorText', 'heroBgColor')">
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Warna Menu Sidebar Aktif</label>
+                                <label>Panel Atas (Warna Kanan)</label>
                                 <div class="color-picker-wrapper">
-                                    <input type="color" id="sidebarActiveColor" oninput="syncColorText('sidebarActiveColor', 'sidebarActiveColorText')">
-                                    <input type="text" id="sidebarActiveColorText" onchange="syncColorPicker('sidebarActiveColorText', 'sidebarActiveColor')">
+                                    <input type="color" id="heroBgColor2" oninput="syncColorText('heroBgColor2', 'heroBgColor2Text')">
+                                    <input type="text" id="heroBgColor2Text" onchange="syncColorPicker('heroBgColor2Text', 'heroBgColor2')">
                                 </div>
                             </div>
                         </div>
@@ -652,10 +676,26 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Ukuran Font General</label>
+                            <label>Ukuran Font Sidebar</label>
                             <div class="range-container">
-                                <input type="range" id="fontSize" min="11" max="18" step="1" oninput="updateRangeVal('fontSize', 'fontSizeVal')">
-                                <span class="range-value" id="fontSizeVal">13px</span>
+                                <input type="range" id="sidebarFontSize" min="9" max="18" step="0.5" oninput="updateRangeVal('sidebarFontSize', 'sidebarFontSizeVal')">
+                                <span class="range-value" id="sidebarFontSizeVal">12px</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ukuran Font Judul / Header</label>
+                            <div class="range-container">
+                                <input type="range" id="titleFontSize" min="16" max="32" step="1" oninput="updateRangeVal('titleFontSize', 'titleFontSizeVal')">
+                                <span class="range-value" id="titleFontSizeVal">23px</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Ukuran Font Tabel</label>
+                            <div class="range-container">
+                                <input type="range" id="tableFontSize" min="9" max="18" step="0.5" oninput="updateRangeVal('tableFontSize', 'tableFontSizeVal')">
+                                <span class="range-value" id="tableFontSizeVal">11.5px</span>
                             </div>
                         </div>
                     </div>
@@ -713,9 +753,17 @@
                             </div>
 
                             <!-- Main Content Preview -->
-                            <div class="preview-content">
-                                <h2 class="preview-title" id="pTitle">Judul Konten</h2>
-                                <p class="preview-text" id="pText">Ini adalah contoh teks umum untuk memantau ukuran font dan jenis font yang dipilih.</p>
+                            <div class="preview-content" style="padding: 10px;">
+                                <!-- Preview Hero Block -->
+                                <div id="pHeroBlock" style="border-radius: 8px; padding: 10px; color: #fff; background: linear-gradient(90deg, #0b3c55, #0F5A7D); margin-bottom: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">
+                                    <h2 class="preview-title" id="pTitle" style="margin: 0; font-size: 11px;">SUMMARY</h2>
+                                    <p class="preview-text" id="pText" style="font-size: 8px; color: rgba(255,255,255,0.85); margin: 3px 0 6px;">Ini pratinjau teks deskripsi panel atas.</p>
+                                    <div style="display:flex; gap:3px; font-size:6px; flex-wrap:wrap;">
+                                        <span style="background: rgba(255,255,255,0.2); padding: 1px 3px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.3);">🔍 Filter UNIT</span>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 1px 3px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.3);">📥 Import</span>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 1px 3px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.3);">📤 Export</span>
+                                    </div>
+                                </div>
                                 
                                 <div class="preview-table-wrap">
                                     <table class="preview-table" id="pTable">
@@ -741,7 +789,7 @@
                                     </table>
                                 </div>
 
-                                <div style="display:flex;gap:4px">
+                                <div style="display:flex;gap:4px;margin-top:8px">
                                     <button class="btn primary" id="pBtnPrimary" style="padding:4px 8px;font-size:8px;border-radius:4px" onclick="event.preventDefault()">Tombol</button>
                                     <button class="btn gray" style="padding:4px 8px;font-size:8px;border-radius:4px;background:#94a3b8" onclick="event.preventDefault()">Batal</button>
                                 </div>
@@ -764,10 +812,14 @@
             bgColor2: '#cceeee',
             sidebarColor: '#0b3c55',
             sidebarColor2: '#17688a',
+            heroBgColor: '#0b3c55',
+            heroBgColor2: '#0F5A7D',
             accentColor: '#007474',
             sidebarActiveColor: 'rgba(255, 255, 255, 0.16)',
             fontFamily: 'system-ui',
-            fontSize: '13',
+            sidebarFontSize: '12',
+            titleFontSize: '23',
+            tableFontSize: '11.5',
             tableMinColWidth: '80',
             tableMaxColWidth: '300',
             tableMinRowHeight: '32',
@@ -782,10 +834,14 @@
                 bgColor2: '#252538',
                 sidebarColor: '#0f0f1a',
                 sidebarColor2: '#1a1a2e',
+                heroBgColor: '#111827',
+                heroBgColor2: '#1f2937',
                 accentColor: '#6366f1',
                 sidebarActiveColor: '#6366f1',
                 fontFamily: 'Poppins',
-                fontSize: '13',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
@@ -796,10 +852,14 @@
                 bgColor2: '#e2ede5',
                 sidebarColor: '#1b4332',
                 sidebarColor2: '#2d6a4f',
+                heroBgColor: '#1b4332',
+                heroBgColor2: '#2d6a4f',
                 accentColor: '#52b788',
                 sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
                 fontFamily: 'Inter',
-                fontSize: '13',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
@@ -810,10 +870,14 @@
                 bgColor2: '#ffe3e3',
                 sidebarColor: '#3e0a24',
                 sidebarColor2: '#630c3c',
+                heroBgColor: '#50072f',
+                heroBgColor2: '#701a4f',
                 accentColor: '#d946ef',
                 sidebarActiveColor: '#d946ef',
                 fontFamily: 'Outfit',
-                fontSize: '13',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
@@ -824,10 +888,14 @@
                 bgColor2: '#f1f5f9',
                 sidebarColor: '#0f172a',
                 sidebarColor2: '#1e293b',
+                heroBgColor: '#1e293b',
+                heroBgColor2: '#334155',
                 accentColor: '#2563eb',
                 sidebarActiveColor: '#2563eb',
                 fontFamily: 'Roboto',
-                fontSize: '13',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
@@ -972,6 +1040,8 @@
             const bgColor2 = document.getElementById('bgColor2').value;
             const sidebarColor = document.getElementById('sidebarColor').value;
             const sidebarColor2 = document.getElementById('sidebarColor2').value;
+            const heroBgColor = document.getElementById('heroBgColor').value;
+            const heroBgColor2 = document.getElementById('heroBgColor2').value;
             const accentColor = document.getElementById('accentColor').value;
             
             // Get active color sidebar (could be text or color picker)
@@ -981,7 +1051,9 @@
             }
 
             const fontFamily = document.getElementById('fontFamily').value;
-            const fontSize = document.getElementById('fontSize').value;
+            const sidebarFontSize = document.getElementById('sidebarFontSize').value;
+            const titleFontSize = document.getElementById('titleFontSize').value;
+            const tableFontSize = document.getElementById('tableFontSize').value;
             const tableMinColWidth = document.getElementById('tableMinColWidth').value;
             const tableMaxColWidth = document.getElementById('tableMaxColWidth').value;
             const tableMinRowHeight = document.getElementById('tableMinRowHeight').value;
@@ -995,6 +1067,18 @@
 
             if (pSidebar) {
                 pSidebar.style.background = `linear-gradient(180deg, ${sidebarColor}, ${sidebarColor2})`;
+                pSidebar.querySelectorAll('.preview-brand, .preview-nav-item, span').forEach(el => {
+                    el.style.fontSize = `${sidebarFontSize / 1.5}px`; // Scaled down for preview shell
+                });
+            }
+
+            const pHeroBlock = document.getElementById('pHeroBlock');
+            if (pHeroBlock) {
+                let heroVal = heroBgColor;
+                if (heroBgColor2) {
+                    heroVal = `linear-gradient(90deg, ${heroBgColor}, ${heroBgColor2})`;
+                }
+                pHeroBlock.style.background = heroVal;
             }
 
             if (pBrandMark) {
@@ -1017,13 +1101,14 @@
                 }
             });
 
-            if (pTitle) pTitle.style.fontSize = `${parseInt(fontSize) + 4}px`;
-            if (pText) pText.style.fontSize = `${fontSize}px`;
+            if (pTitle) pTitle.style.fontSize = `${titleFontSize / 1.5}px`;
+            if (pText) pText.style.fontSize = `${tableFontSize / 1.3}px`;
 
             // Preview Table Sizes
             if (pTable) {
                 const cells = pTable.querySelectorAll('th, td');
                 cells.forEach(cell => {
+                    cell.style.fontSize = `${tableFontSize / 1.3}px`;
                     if (tableMinColWidth) cell.style.minWidth = `${tableMinColWidth / 2}px`; // Scaled down for preview shell
                     if (tableMaxColWidth) cell.style.maxWidth = `${tableMaxColWidth / 2}px`;
                     if (tableMinRowHeight) {
@@ -1045,10 +1130,14 @@
                 bgColor2: document.getElementById('bgColor2').value,
                 sidebarColor: document.getElementById('sidebarColor').value,
                 sidebarColor2: document.getElementById('sidebarColor2').value,
+                heroBgColor: document.getElementById('heroBgColor').value,
+                heroBgColor2: document.getElementById('heroBgColor2').value,
                 accentColor: document.getElementById('accentColor').value,
                 sidebarActiveColor: document.getElementById('sidebarActiveColorText').value || document.getElementById('sidebarActiveColor').value,
                 fontFamily: document.getElementById('fontFamily').value,
-                fontSize: document.getElementById('fontSize').value,
+                sidebarFontSize: document.getElementById('sidebarFontSize').value,
+                titleFontSize: document.getElementById('titleFontSize').value,
+                tableFontSize: document.getElementById('tableFontSize').value,
                 tableMinColWidth: document.getElementById('tableMinColWidth').value,
                 tableMaxColWidth: document.getElementById('tableMaxColWidth').value,
                 tableMinRowHeight: document.getElementById('tableMinRowHeight').value,
