@@ -781,6 +781,76 @@
                         </div>
                     </div>
 
+                    <div class="card">
+                        <div class="card-title">📅 Kustomisasi Kalender COLE</div>
+                        
+                        <div class="form-group">
+                            <label for="coleMonthsPerRow">Bulan per Baris (Layout Grid)</label>
+                            <select id="coleMonthsPerRow" onchange="updatePreview()">
+                                <option value="auto">Auto-Fit (Lebar Otomatis)</option>
+                                <option value="1">1 Bulan per Baris</option>
+                                <option value="2">2 Bulan per Baris</option>
+                                <option value="3">3 Bulan per Baris</option>
+                                <option value="4">4 Bulan per Baris</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label style="font-weight:700; margin-bottom:8px; display:block">Warna Kategori Jadwal COLE</label>
+                            
+                            <div class="form-row" style="margin-bottom:8px">
+                                <div class="form-group">
+                                    <label>Pertemuan</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorOrange" oninput="syncColorText('coleColorOrange', 'coleColorOrangeText')">
+                                        <input type="text" id="coleColorOrangeText" onchange="syncColorPicker('coleColorOrangeText', 'coleColorOrange')">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Laporan / Persuratan</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorGreen" oninput="syncColorText('coleColorGreen', 'coleColorGreenText')">
+                                        <input type="text" id="coleColorGreenText" onchange="syncColorPicker('coleColorGreenText', 'coleColorGreen')">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row" style="margin-bottom:8px">
+                                <div class="form-group">
+                                    <label>Pelatihan</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorBlue" oninput="syncColorText('coleColorBlue', 'coleColorBlueText')">
+                                        <input type="text" id="coleColorBlueText" onchange="syncColorPicker('coleColorBlueText', 'coleColorBlue')">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tanggal Merah</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorRed" oninput="syncColorText('coleColorRed', 'coleColorRedText')">
+                                        <input type="text" id="coleColorRedText" onchange="syncColorPicker('coleColorRedText', 'coleColorRed')">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Internal IDA</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorPurple" oninput="syncColorText('coleColorPurple', 'coleColorPurpleText')">
+                                        <input type="text" id="coleColorPurpleText" onchange="syncColorPicker('coleColorPurpleText', 'coleColorPurple')">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Internal BNU</label>
+                                    <div class="color-picker-wrapper">
+                                        <input type="color" id="coleColorGray" oninput="syncColorText('coleColorGray', 'coleColorGrayText')">
+                                        <input type="text" id="coleColorGrayText" onchange="syncColorPicker('coleColorGrayText', 'coleColorGray')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="display:flex;gap:12px;margin-bottom:40px;flex-wrap:wrap">
                         <button class="btn primary" onclick="saveSettings()">💾 Simpan Setelan</button>
                         <button class="btn danger outline" onclick="resetToDefault()">🔄 Reset Warna & Font</button>
@@ -884,7 +954,14 @@
             tableMaxRowHeight: '80',
             cardBorderRadius: '16',
             buttonBorderRadius: '8',
-            sidebarWidth: '240'
+            sidebarWidth: '240',
+            coleMonthsPerRow: 'auto',
+            coleColorOrange: '#f97316',
+            coleColorGreen: '#16a34a',
+            coleColorBlue: '#2563eb',
+            coleColorRed: '#dc2626',
+            coleColorPurple: '#9333ea',
+            coleColorGray: '#6b7280'
         };
 
         // Theme presets
@@ -1360,7 +1437,14 @@
                 tableMaxRowHeight: document.getElementById('tableMaxRowHeight').value,
                 cardBorderRadius: document.getElementById('cardBorderRadius').value,
                 buttonBorderRadius: document.getElementById('buttonBorderRadius').value,
-                sidebarWidth: document.getElementById('sidebarWidth').value
+                sidebarWidth: document.getElementById('sidebarWidth').value,
+                coleMonthsPerRow: document.getElementById('coleMonthsPerRow').value,
+                coleColorOrange: document.getElementById('coleColorOrange').value,
+                coleColorGreen: document.getElementById('coleColorGreen').value,
+                coleColorBlue: document.getElementById('coleColorBlue').value,
+                coleColorRed: document.getElementById('coleColorRed').value,
+                coleColorPurple: document.getElementById('coleColorPurple').value,
+                coleColorGray: document.getElementById('coleColorGray').value
             };
         }
 

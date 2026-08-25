@@ -361,7 +361,6 @@
             display: none !important;
         }
         
-        /* Floating notification */
         #alert-box {
             position: fixed;
             top: 20px;
@@ -541,6 +540,31 @@
             'gray': '#6b7280'
         };
 
+        function applyColeSettings() {
+            const raw = localStorage.getItem('icms_settings');
+            if (raw) {
+                try {
+                    const settings = JSON.parse(raw);
+                    if (settings.coleColorOrange) colorMap.orange = settings.coleColorOrange;
+                    if (settings.coleColorGreen) colorMap.green = settings.coleColorGreen;
+                    if (settings.coleColorBlue) colorMap.blue = settings.coleColorBlue;
+                    if (settings.coleColorRed) colorMap.red = settings.coleColorRed;
+                    if (settings.coleColorPurple) colorMap.purple = settings.coleColorPurple;
+                    if (settings.coleColorGray) colorMap.gray = settings.coleColorGray;
+
+                    const grid = document.getElementById("calendarGrid");
+                    if (grid) {
+                        const mpr = settings.coleMonthsPerRow || 'auto';
+                        if (mpr === 'auto') {
+                            grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(280px, 1fr))';
+                        } else {
+                            grid.style.gridTemplateColumns = `repeat(${mpr}, 1fr)`;
+                        }
+                    }
+                } catch(e) {}
+            }
+        }
+
         const monthsDef = [
             { num: 1, name: "Januari" },
             { num: 2, name: "Februari" },
@@ -640,7 +664,6 @@
                 if (result.ok && Array.isArray(result.data)) {
                     allEvents = result.data;
                 } else if (result.msg && result.msg.includes("Sheet tidak ditemukan")) {
-                    // Jika sheet schedules belum dibuat, default kosong
                     allEvents = [];
                     showAlert("Sheet 'schedules' belum terbuat di spreadsheet. Membuat template kosong...", "error");
                 } else {
@@ -660,6 +683,7 @@
             const grid = document.getElementById("calendarGrid");
             grid.innerHTML = "";
             grid.classList.remove("hidden");
+            applyColeSettings();
             
             document.getElementById("subHeaderYear").textContent = `Monitoring jadwal program kerja tahun ${currentYear}`;
             document.getElementById("yearInput").value = currentYear;
@@ -792,7 +816,6 @@
                 let noteHtml = `<div class="note">`;
                 let foundNote = false;
                 
-                // Sort dayEvents chronologically for list notes
                 const sortedDates = Object.keys(eventsByDate).filter(k => k.startsWith(`${currentYear}-${String(m.num).padStart(2, '0')}`)).sort();
                 let prevDate = null;
                 
@@ -804,6 +827,8 @@
                         const textColor = colorMap[colorKey] || '#f97316';
                         const hLabel = statusBadge(r.status || 'PLAN', dt, todayStr);
                         
+                        const textStyleColor = textColor;
+                        
                         const sepClass = (prevDate !== null && prevDate !== dt) ? ' note-sep' : '';
                         prevDate = dt;
                         
@@ -811,7 +836,7 @@
                         const todayNoteClass = isNoteToday ? ' note-today' : '';
                         
                         noteHtml += `
-                            <div class="${sepClass}${todayNoteClass}" style="color:${textColor}; font-weight:600; margin-bottom: 2px;">
+                            <div class="${sepClass}${todayNoteClass}" style="color:${textStyleColor}; font-weight:600; margin-bottom: 2px;">
                                 <b>${new Date(dt).getDate()}</b> - ${escapeHtml(r.title)} | ${hLabel}
                             </div>
                         `;
@@ -897,7 +922,7 @@
 
         function addForDate(dateStr){
             const s = getSession();
-            if (s.role !== "admin") return; // Regular users cannot open the modal
+            if (s.role !== "admin") return;
             openModal();
             document.getElementById("event_date").value = dateStr;
         }
@@ -952,7 +977,6 @@
 
         async function updateEventColor(id, newColor) {
             try {
-                // Find existing row to preserve other fields
                 const ev = allEvents.find(x => String(x.id) === String(id));
                 if (!ev) return;
                 
@@ -974,7 +998,6 @@
 
         async function updateEventStatus(id, newStatus) {
             try {
-                // Find existing row to preserve other fields
                 const ev = allEvents.find(x => String(x.id) === String(id));
                 if (!ev) return;
                 
