@@ -701,7 +701,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title">📊 Tata Letak Tabel</div>
+                        <div class="card-title">📊 Kustomisasi Tabel (Tata Letak & Warna)</div>
                         
                         <div class="form-row">
                             <div class="form-group">
@@ -722,6 +722,23 @@
                             <div class="form-group">
                                 <label for="tableMaxRowHeight">Tinggi Baris Maksimal (px)</label>
                                 <input type="number" id="tableMaxRowHeight" min="30" max="120" step="2" oninput="updatePreview()">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Background Header Kolom</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="tableHeaderBgColor" oninput="syncColorText('tableHeaderBgColor', 'tableHeaderBgColorText')">
+                                    <input type="text" id="tableHeaderBgColorText" onchange="syncColorPicker('tableHeaderBgColorText', 'tableHeaderBgColor')">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Teks Header Kolom</label>
+                                <div class="color-picker-wrapper">
+                                    <input type="color" id="tableHeaderTextColor" oninput="syncColorText('tableHeaderTextColor', 'tableHeaderTextColorText')">
+                                    <input type="text" id="tableHeaderTextColorText" onchange="syncColorPicker('tableHeaderTextColorText', 'tableHeaderTextColor')">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -814,6 +831,8 @@
             sidebarColor2: '#17688a',
             heroBgColor: '#0b3c55',
             heroBgColor2: '#0F5A7D',
+            tableHeaderBgColor: '#0F5A7D',
+            tableHeaderTextColor: '#ffffff',
             accentColor: '#007474',
             sidebarActiveColor: 'rgba(255, 255, 255, 0.16)',
             fontFamily: 'system-ui',
@@ -836,6 +855,8 @@
                 sidebarColor2: '#1a1a2e',
                 heroBgColor: '#111827',
                 heroBgColor2: '#1f2937',
+                tableHeaderBgColor: '#1f2937',
+                tableHeaderTextColor: '#ffffff',
                 accentColor: '#6366f1',
                 sidebarActiveColor: '#6366f1',
                 fontFamily: 'Poppins',
@@ -854,6 +875,8 @@
                 sidebarColor2: '#2d6a4f',
                 heroBgColor: '#1b4332',
                 heroBgColor2: '#2d6a4f',
+                tableHeaderBgColor: '#1b4332',
+                tableHeaderTextColor: '#ffffff',
                 accentColor: '#52b788',
                 sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
                 fontFamily: 'Inter',
@@ -872,6 +895,8 @@
                 sidebarColor2: '#630c3c',
                 heroBgColor: '#50072f',
                 heroBgColor2: '#701a4f',
+                tableHeaderBgColor: '#50072f',
+                tableHeaderTextColor: '#ffffff',
                 accentColor: '#d946ef',
                 sidebarActiveColor: '#d946ef',
                 fontFamily: 'Outfit',
@@ -890,6 +915,8 @@
                 sidebarColor2: '#1e293b',
                 heroBgColor: '#1e293b',
                 heroBgColor2: '#334155',
+                tableHeaderBgColor: '#1e293b',
+                tableHeaderTextColor: '#ffffff',
                 accentColor: '#2563eb',
                 sidebarActiveColor: '#2563eb',
                 fontFamily: 'Roboto',
@@ -1043,6 +1070,8 @@
             const heroBgColor = document.getElementById('heroBgColor').value;
             const heroBgColor2 = document.getElementById('heroBgColor2').value;
             const accentColor = document.getElementById('accentColor').value;
+            const tableHeaderBgColor = document.getElementById('tableHeaderBgColor').value;
+            const tableHeaderTextColor = document.getElementById('tableHeaderTextColor').value;
             
             // Get active color sidebar (could be text or color picker)
             let sidebarActiveColor = document.getElementById('sidebarActiveColorText').value;
@@ -1119,7 +1148,9 @@
 
                 const headers = pTable.querySelectorAll('th');
                 headers.forEach(th => {
-                    th.style.background = '#0F5A7D'; // Or let it stay default mid
+                    th.style.background = tableHeaderBgColor;
+                    th.style.backgroundColor = tableHeaderBgColor;
+                    th.style.color = tableHeaderTextColor;
                 });
             }
         }
@@ -1132,6 +1163,8 @@
                 sidebarColor2: document.getElementById('sidebarColor2').value,
                 heroBgColor: document.getElementById('heroBgColor').value,
                 heroBgColor2: document.getElementById('heroBgColor2').value,
+                tableHeaderBgColor: document.getElementById('tableHeaderBgColor').value,
+                tableHeaderTextColor: document.getElementById('tableHeaderTextColor').value,
                 accentColor: document.getElementById('accentColor').value,
                 sidebarActiveColor: document.getElementById('sidebarActiveColorText').value || document.getElementById('sidebarActiveColor').value,
                 fontFamily: document.getElementById('fontFamily').value,

@@ -1,11 +1,39 @@
 // core.js - Shared theme customizer for ICMS
 (function () {
+    const DEFAULT_SETTINGS = {
+        bgColor: '#e6f4f1',
+        bgColor2: '#cceeee',
+        sidebarColor: '#0b3c55',
+        sidebarColor2: '#17688a',
+        heroBgColor: '#0b3c55',
+        heroBgColor2: '#0F5A7D',
+        tableHeaderBgColor: '#0F5A7D',
+        tableHeaderTextColor: '#ffffff',
+        accentColor: '#007474',
+        sidebarActiveColor: 'rgba(255, 255, 255, 0.16)',
+        fontFamily: 'system-ui',
+        sidebarFontSize: '12',
+        titleFontSize: '23',
+        tableFontSize: '11.5',
+        tableMinColWidth: '80',
+        tableMaxColWidth: '300',
+        tableMinRowHeight: '32',
+        tableMaxRowHeight: '80'
+    };
+
     function applyCustomStyles() {
         const settingsRaw = localStorage.getItem('icms_settings');
-        if (!settingsRaw) return;
+        let settings = DEFAULT_SETTINGS;
+        
+        if (settingsRaw) {
+            try {
+                settings = { ...DEFAULT_SETTINGS, ...JSON.parse(settingsRaw) };
+            } catch (e) {
+                settings = DEFAULT_SETTINGS;
+            }
+        }
 
         try {
-            const settings = JSON.parse(settingsRaw);
             let css = '';
 
             // 1. Background Color / Gradient (tidak diterapkan di login.html agar login-bg.jpg tetap tampil)
@@ -87,6 +115,27 @@
                 css += `
                     table th, table td, table tr, th, td, tr, .preview-table th, .preview-table td {
                         font-size: ${settings.tableFontSize}px;
+                    }
+                `;
+            }
+
+            // 4d. Table Header Colors (Tanpa !important agar bisa ditimpa saat edit)
+            if (settings.tableHeaderBgColor || settings.tableHeaderTextColor) {
+                css += `
+                    table th, th, .preview-table th {
+                `;
+                if (settings.tableHeaderBgColor) {
+                    css += `
+                        background: ${settings.tableHeaderBgColor};
+                        background-color: ${settings.tableHeaderBgColor};
+                    `;
+                }
+                if (settings.tableHeaderTextColor) {
+                    css += `
+                        color: ${settings.tableHeaderTextColor};
+                    `;
+                }
+                css += `
                     }
                 `;
             }
