@@ -982,7 +982,7 @@
                         <div id="pColeLegend" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;"></div>
 
                         <!-- Mini calendar grid -->
-                        <div id="pColeGrid" style="display:grid; gap:6px; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); transition: all 0.3s;">
+                        <div id="pColeGrid" style="display:grid; gap:6px; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); transition: all 0.3s;">
                             <!-- 4 bulan preview -->
                             <div class="pcole-month" id="pColeM1"></div>
                             <div class="pcole-month" id="pColeM2"></div>
@@ -1507,52 +1507,67 @@
 
         const MONTH_NAMES = ['Januari','Februari','Maret','April'];
 
-        function renderColeMonth(containerEl, monthIdx, colorMap, todayDay) {
+        function renderColeMonth(containerEl, monthIdx, colorMap) {
             const year = new Date().getFullYear();
+            // Cole asli mulai dari Minggu (firstDay = 0=Sun), sama seperti cole.html
             const firstDay = new Date(year, monthIdx, 1).getDay(); // 0=Sun
             const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
             const sampleEvts = COLE_SAMPLE[monthIdx] || [];
             const evtMap = {};
             sampleEvts.forEach(e => evtMap[e.day] = e.color);
 
-            let html = `<div class="pcole-month-title">📆 ${MONTH_NAMES[monthIdx]} ${year}</div>`;
+            const now = new Date();
+            const todayM = now.getMonth();
+            const todayD = now.getDate();
 
-            // Header hari
-            html += `<div class="pcole-day-row">`;
-            ['M','S','S','R','K','J','S'].forEach(d => {
-                html += `<div class="pcole-day" style="color:#94a3b8;font-weight:800">${d}</div>`;
-            });
-            html += `</div>`;
+            // Gunakan struktur table persis seperti cole.html
+            let html = `
+                <div class="pcole-month-title">📅 ${MONTH_NAMES[monthIdx]} ${year}</div>
+                <table style="width:100%;border-collapse:collapse;table-layout:fixed">
+                    <tr>
+                        <th style="color:#ef4444;font-weight:700;font-size:9px;padding:2px;text-align:center">Min</th>
+                        <th style="font-weight:700;font-size:9px;padding:2px;text-align:center">Sen</th>
+                        <th style="font-weight:700;font-size:9px;padding:2px;text-align:center">Sel</th>
+                        <th style="font-weight:700;font-size:9px;padding:2px;text-align:center">Rab</th>
+                        <th style="font-weight:700;font-size:9px;padding:2px;text-align:center">Kam</th>
+                        <th style="font-weight:700;font-size:9px;padding:2px;text-align:center">Jum</th>
+                        <th style="color:#3b82f6;font-weight:700;font-size:9px;padding:2px;text-align:center">Sab</th>
+                    </tr>
+                    <tr>`;
+
+            // Padding awal (firstDay 0=Min, 1=Sen, ..., 6=Sab)
+            for (let i = 0; i < firstDay; i++) {
+                html += `<td></td>`;
+            }
 
             let col = firstDay;
-            let html_row = `<div class="pcole-day-row">`;
-            // Padding awal
-            for (let i = 0; i < firstDay; i++) {
-                html_row += `<div class="pcole-day"></div>`;
-            }
-
             for (let d = 1; d <= daysInMonth; d++) {
                 const hasEv = !!evtMap[d];
-                const isToday = (monthIdx === new Date().getMonth() && d === new Date().getDate());
-                const evColor = hasEv ? colorMap[evtMap[d]] : 'transparent';
-                const cls = ['pcole-day', hasEv ? 'event' : '', isToday ? 'today-dot' : ''].filter(Boolean).join(' ');
-                const txtColor = hasEv ? '#fff' : '#374151';
-                html_row += `<div class="${cls}" style="background:${evColor};color:${txtColor}">${d}</div>`;
+                const isToday = (monthIdx === todayM && d === todayD);
+
+                if (hasEv) {
+                    const evColor = colorMap[evtMap[d]] || '#f97316';
+                    const todayCls = isToday ? ';outline:2px solid #1e3a3a;outline-offset:-2px' : '';
+                    html += `<td style="padding:1px;text-align:center">`;
+                    html += `<button style="width:100%;aspect-ratio:1;border:none;border-radius:4px;font-size:9px;font-weight:700;cursor:default;background:${evColor};color:#fff${todayCls}">${d}</button>`;
+                    html += `</td>`;
+                } else {
+                    const todayStyle = isToday ? 'font-weight:800;color:#0f172a;text-decoration:underline' : '';
+                    html += `<td style="padding:1px;text-align:center;font-size:9px;${todayStyle}">${d}</td>`;
+                }
+
                 col++;
-                if (col % 7 === 0) {
-                    html_row += `</div>`;
-                    html += html_row;
-                    html_row = `<div class="pcole-day-row">`;
+                if (col % 7 === 0 && d < daysInMonth) {
+                    html += `</tr><tr>`;
                 }
             }
-            // Remaining
-            if (col % 7 !== 0) {
-                for (let r = col % 7; r < 7; r++) {
-                    html_row += `<div class="pcole-day"></div>`;
-                }
-                html_row += `</div>`;
-                html += html_row;
+
+            // Padding akhir
+            const remaining = 7 - (col % 7);
+            if (remaining < 7) {
+                for (let r = 0; r < remaining; r++) html += `<td></td>`;
             }
+            html += `</tr></table>`;
 
             containerEl.innerHTML = html;
         }
@@ -1564,7 +1579,7 @@
 
             if (grid) {
                 if (mpr === 'auto') {
-                    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(90px,1fr))';
+                    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(160px,1fr))';
                 } else {
                     const count = Math.min(parseInt(mpr), 4); // Max 4 shown in preview
                     grid.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
