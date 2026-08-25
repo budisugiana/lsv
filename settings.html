@@ -481,6 +481,56 @@
         .success-text {
             color: #16a34a;
         }
+
+        /* COLE Preview */
+        .pcole-month {
+            border: 1px solid #d1e9e4;
+            border-radius: 8px;
+            padding: 7px;
+            background: #fff;
+            font-size: 8px;
+        }
+        .pcole-month-title {
+            font-weight: 800;
+            font-size: 9px;
+            color: #0b3c55;
+            border-bottom: 1px solid #d1e9e4;
+            padding-bottom: 4px;
+            margin-bottom: 5px;
+        }
+        .pcole-day-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+        .pcole-day {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            font-weight: 600;
+            color: #374151;
+            transition: background 0.25s;
+        }
+        .pcole-day.event {
+            color: #fff !important;
+        }
+        .pcole-day.today-dot {
+            border: 1.5px solid #0b3c55;
+        }
+        .pcole-legend-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 999px;
+            color: #fff;
+        }
     </style>
 </head>
 
@@ -920,6 +970,24 @@
                                     <button class="btn gray" style="padding:4px 8px;font-size:8px;border-radius:4px;background:#94a3b8" onclick="event.preventDefault()">Batal</button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- COLE Preview Card -->
+                    <div class="card" style="margin-top:16px">
+                        <div class="card-title">📅 Pratinjau Kalender COLE</div>
+                        <p style="font-size:11px;color:var(--muted);margin-bottom:12px">Pratinjau berubah langsung sesuai warna kategori dan layout bulan yang dipilih.</p>
+
+                        <!-- Legend warna -->
+                        <div id="pColeLegend" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px;"></div>
+
+                        <!-- Mini calendar grid -->
+                        <div id="pColeGrid" style="display:grid; gap:6px; grid-template-columns: repeat(auto-fill, minmax(90px,1fr)); transition: all 0.3s;">
+                            <!-- 4 bulan preview -->
+                            <div class="pcole-month" id="pColeM1"></div>
+                            <div class="pcole-month" id="pColeM2"></div>
+                            <div class="pcole-month" id="pColeM3"></div>
+                            <div class="pcole-month" id="pColeM4"></div>
                         </div>
                     </div>
                 </div>
@@ -1412,6 +1480,117 @@
                     th.style.backgroundColor = tableHeaderBgColor;
                     th.style.color = tableHeaderTextColor;
                 });
+            }
+
+            updateColePreview();
+        }
+
+        // ── COLE LIVE PREVIEW ──────────────────────────────────
+        function getColeColors() {
+            return {
+                orange: document.getElementById('coleColorOrange')?.value || '#f97316',
+                green:  document.getElementById('coleColorGreen')?.value  || '#16a34a',
+                blue:   document.getElementById('coleColorBlue')?.value   || '#2563eb',
+                red:    document.getElementById('coleColorRed')?.value    || '#dc2626',
+                purple: document.getElementById('coleColorPurple')?.value || '#9333ea',
+                gray:   document.getElementById('coleColorGray')?.value   || '#6b7280',
+            };
+        }
+
+        // Sample events per month preview (hari yang diberi warna)
+        const COLE_SAMPLE = {
+            0: [ { day: 3,  color: 'orange' }, { day: 10, color: 'blue' },   { day: 22, color: 'green' } ],
+            1: [ { day: 7,  color: 'purple'}, { day: 14, color: 'red' },    { day: 21, color: 'gray'  } ],
+            2: [ { day: 2,  color: 'blue'  }, { day: 16, color: 'orange' }, { day: 28, color: 'green' } ],
+            3: [ { day: 5,  color: 'red'   }, { day: 12, color: 'purple' }, { day: 19, color: 'gray'  } ],
+        };
+
+        const MONTH_NAMES = ['Januari','Februari','Maret','April'];
+
+        function renderColeMonth(containerEl, monthIdx, colorMap, todayDay) {
+            const year = new Date().getFullYear();
+            const firstDay = new Date(year, monthIdx, 1).getDay(); // 0=Sun
+            const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+            const sampleEvts = COLE_SAMPLE[monthIdx] || [];
+            const evtMap = {};
+            sampleEvts.forEach(e => evtMap[e.day] = e.color);
+
+            let html = `<div class="pcole-month-title">📆 ${MONTH_NAMES[monthIdx]} ${year}</div>`;
+
+            // Header hari
+            html += `<div class="pcole-day-row">`;
+            ['M','S','S','R','K','J','S'].forEach(d => {
+                html += `<div class="pcole-day" style="color:#94a3b8;font-weight:800">${d}</div>`;
+            });
+            html += `</div>`;
+
+            let col = firstDay;
+            let html_row = `<div class="pcole-day-row">`;
+            // Padding awal
+            for (let i = 0; i < firstDay; i++) {
+                html_row += `<div class="pcole-day"></div>`;
+            }
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const hasEv = !!evtMap[d];
+                const isToday = (monthIdx === new Date().getMonth() && d === new Date().getDate());
+                const evColor = hasEv ? colorMap[evtMap[d]] : 'transparent';
+                const cls = ['pcole-day', hasEv ? 'event' : '', isToday ? 'today-dot' : ''].filter(Boolean).join(' ');
+                const txtColor = hasEv ? '#fff' : '#374151';
+                html_row += `<div class="${cls}" style="background:${evColor};color:${txtColor}">${d}</div>`;
+                col++;
+                if (col % 7 === 0) {
+                    html_row += `</div>`;
+                    html += html_row;
+                    html_row = `<div class="pcole-day-row">`;
+                }
+            }
+            // Remaining
+            if (col % 7 !== 0) {
+                for (let r = col % 7; r < 7; r++) {
+                    html_row += `<div class="pcole-day"></div>`;
+                }
+                html_row += `</div>`;
+                html += html_row;
+            }
+
+            containerEl.innerHTML = html;
+        }
+
+        function updateColePreview() {
+            const colors = getColeColors();
+            const mpr = document.getElementById('coleMonthsPerRow')?.value || 'auto';
+            const grid = document.getElementById('pColeGrid');
+
+            if (grid) {
+                if (mpr === 'auto') {
+                    grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(90px,1fr))';
+                } else {
+                    const count = Math.min(parseInt(mpr), 4); // Max 4 shown in preview
+                    grid.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+                }
+            }
+
+            // Render 4 sample months
+            for (let i = 0; i < 4; i++) {
+                const el = document.getElementById(`pColeM${i + 1}`);
+                if (el) renderColeMonth(el, i, colors);
+            }
+
+            // Legend
+            const legendEl = document.getElementById('pColeLegend');
+            if (legendEl) {
+                const labels = {
+                    orange: 'Pertemuan',
+                    green:  'Laporan',
+                    blue:   'Pelatihan',
+                    red:    'Tgl Merah',
+                    purple: 'Int. IDA',
+                    gray:   'Int. BNU',
+                };
+                legendEl.innerHTML = Object.entries(labels).map(([k, label]) =>
+                    `<span class="pcole-legend-dot" style="background:${colors[k]}">${label}</span>`
+                ).join('');
             }
         }
 
