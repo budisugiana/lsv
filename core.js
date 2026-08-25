@@ -94,12 +94,21 @@
 
             // 3. General Font Family
             if (settings.fontFamily) {
-                if (settings.fontFamily !== 'system-ui' && !document.getElementById('custom-font-link')) {
-                    const fontLink = document.createElement('link');
-                    fontLink.id = 'custom-font-link';
-                    fontLink.rel = 'stylesheet';
-                    fontLink.href = `https://fonts.googleapis.com/css2?family=${settings.fontFamily.replace(/\s+/g, '+')}:wght@300;400;500;600;700&display=swap`;
-                    document.head.appendChild(fontLink);
+                if (settings.fontFamily !== 'system-ui') {
+                    let fontLink = document.getElementById('custom-font-link');
+                    const fontHref = `https://fonts.googleapis.com/css2?family=${settings.fontFamily.replace(/\s+/g, '+')}:wght@300;400;500;600;700&display=swap`;
+                    if (!fontLink) {
+                        fontLink = document.createElement('link');
+                        fontLink.id = 'custom-font-link';
+                        fontLink.rel = 'stylesheet';
+                        document.head.appendChild(fontLink);
+                    }
+                    if (fontLink.href !== fontHref) {
+                        fontLink.href = fontHref;
+                    }
+                } else {
+                    const fontLink = document.getElementById('custom-font-link');
+                    if (fontLink) fontLink.remove();
                 }
                 css += `
                     body, input, select, button, textarea, .brand-title, .brand-subtitle, th, td, a, p, span, div {
@@ -242,9 +251,9 @@
             if (!styleEl) {
                 styleEl = document.createElement('style');
                 styleEl.id = 'custom-theme-styles';
-                document.head.appendChild(styleEl);
             }
             styleEl.innerHTML = css;
+            document.head.appendChild(styleEl);
 
         } catch (e) {
             console.error('Error applying custom styles:', e);
