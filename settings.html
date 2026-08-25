@@ -505,6 +505,7 @@
                 <a href="keu_portal.html" style="padding-left:32px">↳ PORTAL</a>
                 <a href="keu_other.html" style="padding-left:32px">↳ OTHER</a>
                 <a id="navUsers" href="users.html" style="display:none">⚿ KELOLA USER</a>
+                <a id="navCole" href="cole.html">📅 COLE</a>
                 <a class="active" id="navSettings" href="settings.html">⚙ PENGATURAN</a>
             </nav>
             <div class="sidebar-bottom">
@@ -780,9 +781,10 @@
                         </div>
                     </div>
 
-                    <div style="display:flex;gap:12px;margin-bottom:40px">
+                    <div style="display:flex;gap:12px;margin-bottom:40px;flex-wrap:wrap">
                         <button class="btn primary" onclick="saveSettings()">💾 Simpan Setelan</button>
-                        <button class="btn danger outline" onclick="resetToDefault()">🔄 Kembalikan Default</button>
+                        <button class="btn danger outline" onclick="resetToDefault()">🔄 Reset Warna & Font</button>
+                        <button class="btn danger" style="background:#ef4444 !important;color:#fff" onclick="resetAllSettings()">💥 Reset Total (Semua Halaman & Tabel)</button>
                     </div>
                     <div id="save-status"></div>
                 </div>
@@ -1379,6 +1381,49 @@
                     status.innerHTML = '';
                 }, 3000);
             }
+        }
+
+        function resetAllSettings() {
+            if (!confirm("⚠️ Apakah Anda yakin ingin mereset seluruh setelan?\nTindakan ini akan mengembalikan warna tema default, serta mereset semua pengaturan kolom, lebar kolom, baris, dan tabel kustom di seluruh halaman.")) {
+                return;
+            }
+            
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key) {
+                    if (
+                        key.startsWith('icms_') ||
+                        key.includes('_multi_packet_list') ||
+                        key.includes('_column_order') ||
+                        key.includes('_visible_cols') ||
+                        key.includes('_col_width') ||
+                        key.includes('_row_height') ||
+                        key.includes('_sort_col') ||
+                        key.includes('_sort_dir') ||
+                        key.includes('_filters') ||
+                        key.includes('_grp_override') ||
+                        key.includes('_custom_tbl') ||
+                        key.includes('_col_widths') ||
+                        key.includes('_row_heights') ||
+                        key.includes('zoom_level')
+                    ) {
+                        keysToRemove.push(key);
+                    }
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            // Show status
+            const status = document.getElementById('save-status');
+            if (status) {
+                status.innerHTML = '<span class="success-text" style="color:#ef4444">✔️ Seluruh setelan berhasil di-reset! Memuat ulang halaman...</span>';
+            }
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
         }
 
         function resetToDefault() {
