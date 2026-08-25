@@ -741,31 +741,18 @@
                     const hasEvent = dayEvents.length > 0;
                     
                     let tdClass = "tooltip";
-                    let tdStyle = "";
+                    if (dateStr === todayStr) tdClass += " today";
                     
-                    if (dateStr === todayStr) {
-                        tdClass += " today";
-                    }
-                    
+                    monthHtml += `<td class="${tdClass}">`;
+
                     if (hasEvent) {
+                        // Terapkan warna LANGSUNG ke button, bukan ke td
                         const firstEv = dayEvents[0];
                         const colorKey = firstEv.color || 'orange';
                         const bgColor = colorMap[colorKey] || '#f97316';
-                        tdStyle = `style="background:${bgColor}"`;
-                        
-                        if (dateStr === todayStr) {
-                            tdClass += " event-today";
-                        } else if (dateStr < todayStr) {
-                            tdClass += " event-past";
-                        } else {
-                            tdClass += " event-future";
-                        }
-                    }
-                    
-                    monthHtml += `<td class="${tdClass}" ${tdStyle}>`;
-                    monthHtml += `<button type="button" onclick="addForDate('${dateStr}')">${d}</button>`;
-                    
-                    if (hasEvent) {
+                        monthHtml += `<button type="button" onclick="addForDate('${dateStr}')" style="background:${bgColor};color:#fff;">${d}</button>`;
+
+                        // Tooltip dengan detail event
                         monthHtml += `<span>`;
                         dayEvents.forEach(ev => {
                             const title = escapeHtml(ev.title);
@@ -775,19 +762,17 @@
                             monthHtml += `• <b>${title}</b>${desc}<br>`;
                             
                             // Color changer (Admin only)
-                            if (dateStr > todayStr) {
-                                monthHtml += `
-                                <div class="admin-only" style="display:flex; align-items:center; gap:3px; margin-top:4px;">
-                                    <select onchange="updateEventColor('${evId}', this.value)" style="border:1px solid #cbd5e1; border-radius:4px; padding:2px; font-size:9px; color:#0f172a; font-weight:700;">
-                                        <option value="orange" ${ev.color==='orange'?'selected':''}>Oranye</option>
-                                        <option value="green" ${ev.color==='green'?'selected':''}>Hijau</option>
-                                        <option value="blue" ${ev.color==='blue'?'selected':''}>Biru</option>
-                                        <option value="red" ${ev.color==='red'?'selected':''}>Merah</option>
-                                        <option value="purple" ${ev.color==='purple'?'selected':''}>Ungu</option>
-                                        <option value="gray" ${ev.color==='gray'?'selected':''}>Abu-abu</option>
-                                    </select>
-                                </div>`;
-                            }
+                            monthHtml += `
+                            <div class="admin-only" style="display:flex; align-items:center; gap:3px; margin-top:4px;">
+                                <select onchange="updateEventColor('${evId}', this.value)" style="border:1px solid #cbd5e1; border-radius:4px; padding:2px; font-size:9px; color:#0f172a; font-weight:700;">
+                                    <option value="orange" ${ev.color==='orange'?'selected':''}>Oranye</option>
+                                    <option value="green" ${ev.color==='green'?'selected':''}>Hijau</option>
+                                    <option value="blue" ${ev.color==='blue'?'selected':''}>Biru</option>
+                                    <option value="red" ${ev.color==='red'?'selected':''}>Merah</option>
+                                    <option value="purple" ${ev.color==='purple'?'selected':''}>Ungu</option>
+                                    <option value="gray" ${ev.color==='gray'?'selected':''}>Abu-abu</option>
+                                </select>
+                            </div>`;
                             
                             // Status changer & delete button (Admin only)
                             const statusVal = String(ev.status || 'PLAN').toUpperCase();
@@ -803,6 +788,9 @@
                             </div>`;
                         });
                         monthHtml += `</span>`;
+                    } else {
+                        // Hari biasa tanpa event
+                        monthHtml += `<button type="button" onclick="addForDate('${dateStr}')">${d}</button>`;
                     }
                     
                     monthHtml += `</td>`;
