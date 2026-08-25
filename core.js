@@ -18,7 +18,10 @@
         tableMinColWidth: '80',
         tableMaxColWidth: '300',
         tableMinRowHeight: '32',
-        tableMaxRowHeight: '80'
+        tableMaxRowHeight: '80',
+        cardBorderRadius: '16',
+        buttonBorderRadius: '8',
+        sidebarWidth: '240'
     };
 
     function applyCustomStyles() {
@@ -59,6 +62,19 @@
                 css += `
                     .sidebar {
                         background: ${sideVal} !important;
+                    }
+                `;
+            }
+
+            // 2b. Sidebar Width (tanpa !important agar fleksibel)
+            if (settings.sidebarWidth) {
+                const w = parseInt(settings.sidebarWidth);
+                css += `
+                    .sidebar {
+                        width: ${w}px !important;
+                    }
+                    .main {
+                        margin-left: ${w}px !important;
                     }
                 `;
             }
@@ -201,6 +217,22 @@
                     .sidebar nav a.active, .sidebar nav a:hover {
                         background: ${settings.sidebarActiveColor} !important;
                         color: #ffffff !important;
+                    }
+                `;
+            }
+
+            // 8. Kelengkungan Sudut (Border Radius)
+            if (settings.cardBorderRadius !== undefined) {
+                css += `
+                    .card, .hero, .modal-box, .preview-shell, .preview-card {
+                        border-radius: ${settings.cardBorderRadius}px !important;
+                    }
+                `;
+            }
+            if (settings.buttonBorderRadius !== undefined) {
+                css += `
+                    .btn, button, input, select, textarea, .brand-mark, .preview-brand, .preview-nav-item {
+                        border-radius: ${settings.buttonBorderRadius}px !important;
                     }
                 `;
             }

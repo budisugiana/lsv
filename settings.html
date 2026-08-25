@@ -637,6 +637,14 @@
                                 <input type="text" id="sidebarActiveColorText" onchange="syncColorPicker('sidebarActiveColorText', 'sidebarActiveColor')">
                             </div>
                         </div>
+
+                        <div class="form-group">
+                            <label>Lebar Sidebar</label>
+                            <div class="range-container">
+                                <input type="range" id="sidebarWidth" min="180" max="320" step="5" oninput="updateRangeVal('sidebarWidth', 'sidebarWidthVal')">
+                                <span class="range-value" id="sidebarWidthVal">240px</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="card">
@@ -672,6 +680,15 @@
                                 <option value="Poppins">Poppins (Geometric Sans-serif)</option>
                                 <option value="Outfit">Outfit (Premium & Elegant)</option>
                                 <option value="Montserrat">Montserrat (Modern & Bold)</option>
+                                <option value="Playfair Display">Playfair Display (Elegant Serif)</option>
+                                <option value="Cinzel">Cinzel (Classical Roman Serif)</option>
+                                <option value="Lato">Lato (Friendly Sans)</option>
+                                <option value="Ubuntu">Ubuntu (Techy Sans)</option>
+                                <option value="Open Sans">Open Sans (Neutral & Clean)</option>
+                                <option value="Nunito">Nunito (Warm Rounded)</option>
+                                <option value="Quicksand">Quicksand (Friendly Rounded)</option>
+                                <option value="Lora">Lora (Contemporary Serif)</option>
+                                <option value="Cabin">Cabin (Humanist Sans)</option>
                             </select>
                         </div>
 
@@ -739,6 +756,26 @@
                                     <input type="color" id="tableHeaderTextColor" oninput="syncColorText('tableHeaderTextColor', 'tableHeaderTextColorText')">
                                     <input type="text" id="tableHeaderTextColorText" onchange="syncColorPicker('tableHeaderTextColorText', 'tableHeaderTextColor')">
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">📐 Kelengkungan Sudut (Shape Corners)</div>
+                        
+                        <div class="form-group">
+                            <label>Kelengkungan Kartu & Panel</label>
+                            <div class="range-container">
+                                <input type="range" id="cardBorderRadius" min="0" max="32" step="1" oninput="updateRangeVal('cardBorderRadius', 'cardBorderRadiusVal')">
+                                <span class="range-value" id="cardBorderRadiusVal">16px</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kelengkungan Tombol & Input</label>
+                            <div class="range-container">
+                                <input type="range" id="buttonBorderRadius" min="0" max="20" step="1" oninput="updateRangeVal('buttonBorderRadius', 'buttonBorderRadiusVal')">
+                                <span class="range-value" id="buttonBorderRadiusVal">8px</span>
                             </div>
                         </div>
                     </div>
@@ -842,7 +879,10 @@
             tableMinColWidth: '80',
             tableMaxColWidth: '300',
             tableMinRowHeight: '32',
-            tableMaxRowHeight: '80'
+            tableMaxRowHeight: '80',
+            cardBorderRadius: '16',
+            buttonBorderRadius: '8',
+            sidebarWidth: '240'
         };
 
         // Theme presets
@@ -866,7 +906,10 @@
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
-                tableMaxRowHeight: '80'
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
             },
             forest: {
                 bgColor: '#f4f8f5',
@@ -886,7 +929,10 @@
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
-                tableMaxRowHeight: '80'
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
             },
             sunset: {
                 bgColor: '#fff5f5',
@@ -906,7 +952,10 @@
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
-                tableMaxRowHeight: '80'
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
             },
             professional: {
                 bgColor: '#f8fafc',
@@ -926,7 +975,125 @@
                 tableMinColWidth: '80',
                 tableMaxColWidth: '300',
                 tableMinRowHeight: '32',
-                tableMaxRowHeight: '80'
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
+            },
+            ocean: {
+                bgColor: '#f0f7ff',
+                bgColor2: '#e0f2fe',
+                sidebarColor: '#0c4a6e',
+                sidebarColor2: '#0284c7',
+                heroBgColor: '#0c4a6e',
+                heroBgColor2: '#0284c7',
+                tableHeaderBgColor: '#0284c7',
+                tableHeaderTextColor: '#ffffff',
+                accentColor: '#0284c7',
+                sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
+                fontFamily: 'Outfit',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
+                tableMinColWidth: '80',
+                tableMaxColWidth: '300',
+                tableMinRowHeight: '32',
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
+            },
+            sakura: {
+                bgColor: '#fff5f7',
+                bgColor2: '#fce7f3',
+                sidebarColor: '#831843',
+                sidebarColor2: '#db2777',
+                heroBgColor: '#831843',
+                heroBgColor2: '#db2777',
+                tableHeaderBgColor: '#db2777',
+                tableHeaderTextColor: '#ffffff',
+                accentColor: '#db2777',
+                sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
+                fontFamily: 'Poppins',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
+                tableMinColWidth: '80',
+                tableMaxColWidth: '300',
+                tableMinRowHeight: '32',
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
+            },
+            aurora: {
+                bgColor: '#0f172a',
+                bgColor2: '#1e293b',
+                sidebarColor: '#022c22',
+                sidebarColor2: '#065f46',
+                heroBgColor: '#022c22',
+                heroBgColor2: '#065f46',
+                tableHeaderBgColor: '#065f46',
+                tableHeaderTextColor: '#ffffff',
+                accentColor: '#10b981',
+                sidebarActiveColor: '#10b981',
+                fontFamily: 'Inter',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
+                tableMinColWidth: '80',
+                tableMaxColWidth: '300',
+                tableMinRowHeight: '32',
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '12',
+                buttonBorderRadius: '6',
+                sidebarWidth: '230'
+            },
+            amber: {
+                bgColor: '#fdfbf7',
+                bgColor2: '#f5efe6',
+                sidebarColor: '#451a03',
+                sidebarColor2: '#78350f',
+                heroBgColor: '#451a03',
+                heroBgColor2: '#78350f',
+                tableHeaderBgColor: '#78350f',
+                tableHeaderTextColor: '#ffffff',
+                accentColor: '#d97706',
+                sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
+                fontFamily: 'Montserrat',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
+                tableMinColWidth: '80',
+                tableMaxColWidth: '300',
+                tableMinRowHeight: '32',
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '18',
+                buttonBorderRadius: '9',
+                sidebarWidth: '250'
+            },
+            purple: {
+                bgColor: '#faf5ff',
+                bgColor2: '#f3e8ff',
+                sidebarColor: '#4c1d95',
+                sidebarColor2: '#7c3aed',
+                heroBgColor: '#4c1d95',
+                heroBgColor2: '#7c3aed',
+                tableHeaderBgColor: '#7c3aed',
+                tableHeaderTextColor: '#ffffff',
+                accentColor: '#8b5cf6',
+                sidebarActiveColor: 'rgba(255, 255, 255, 0.15)',
+                fontFamily: 'Outfit',
+                sidebarFontSize: '12',
+                titleFontSize: '23',
+                tableFontSize: '11.5',
+                tableMinColWidth: '80',
+                tableMaxColWidth: '300',
+                tableMinRowHeight: '32',
+                tableMaxRowHeight: '80',
+                cardBorderRadius: '16',
+                buttonBorderRadius: '8',
+                sidebarWidth: '240'
             }
         };
 
@@ -1087,15 +1254,20 @@
             const tableMaxColWidth = document.getElementById('tableMaxColWidth').value;
             const tableMinRowHeight = document.getElementById('tableMinRowHeight').value;
             const tableMaxRowHeight = document.getElementById('tableMaxRowHeight').value;
+            const cardBorderRadius = document.getElementById('cardBorderRadius').value;
+            const buttonBorderRadius = document.getElementById('buttonBorderRadius').value;
+            const sidebarWidth = document.getElementById('sidebarWidth').value;
 
             // Apply to preview elements
             if (pShell) {
                 pShell.style.background = `linear-gradient(135deg, ${bgColor}, ${bgColor2})`;
                 pShell.style.color = '#1e3a3a';
+                pShell.style.borderRadius = `${cardBorderRadius / 2}px`;
             }
 
             if (pSidebar) {
                 pSidebar.style.background = `linear-gradient(180deg, ${sidebarColor}, ${sidebarColor2})`;
+                pSidebar.style.width = `${sidebarWidth / 2.66}px`;
                 pSidebar.querySelectorAll('.preview-brand, .preview-nav-item, span').forEach(el => {
                     el.style.fontSize = `${sidebarFontSize / 1.5}px`; // Scaled down for preview shell
                 });
@@ -1108,10 +1280,12 @@
                     heroVal = `linear-gradient(90deg, ${heroBgColor}, ${heroBgColor2})`;
                 }
                 pHeroBlock.style.background = heroVal;
+                pHeroBlock.style.borderRadius = `${cardBorderRadius / 2}px`;
             }
 
             if (pBrandMark) {
                 pBrandMark.style.background = accentColor;
+                pBrandMark.style.borderRadius = `${buttonBorderRadius / 2}px`;
             }
 
             if (pNavActive) {
@@ -1120,6 +1294,13 @@
 
             if (pBtnPrimary) {
                 pBtnPrimary.style.background = accentColor;
+                pBtnPrimary.style.borderRadius = `${buttonBorderRadius / 2}px`;
+            }
+
+            if (pSidebar) {
+                pSidebar.querySelectorAll('.preview-brand, .preview-nav-item').forEach(el => {
+                    el.style.borderRadius = `${buttonBorderRadius / 2}px`;
+                });
             }
 
             // Preview Fonts & sizes
@@ -1174,7 +1355,10 @@
                 tableMinColWidth: document.getElementById('tableMinColWidth').value,
                 tableMaxColWidth: document.getElementById('tableMaxColWidth').value,
                 tableMinRowHeight: document.getElementById('tableMinRowHeight').value,
-                tableMaxRowHeight: document.getElementById('tableMaxRowHeight').value
+                tableMaxRowHeight: document.getElementById('tableMaxRowHeight').value,
+                cardBorderRadius: document.getElementById('cardBorderRadius').value,
+                buttonBorderRadius: document.getElementById('buttonBorderRadius').value,
+                sidebarWidth: document.getElementById('sidebarWidth').value
             };
         }
 
